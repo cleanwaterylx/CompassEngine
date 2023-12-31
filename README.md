@@ -1,2 +1,2 @@
-# cw_engine
+# CompasEngine
 A game engine
