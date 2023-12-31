@@ -6,14 +6,14 @@
 #include <string>
 #include <unordered_set>
 
-namespace cw_engine
+namespace Compass
 {
     extern bool g_is_editor_mode;
     extern std::unordered_set<std::string> g_editor_tick_component_types; // 需要tick的compoent类型
 
-    class CW_Engine
+    class CompassEngine
     {
-        friend class CwEditor;
+        friend class CompassEditor;
 
         static const float s_fps_aplha;
 

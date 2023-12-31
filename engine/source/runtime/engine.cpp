@@ -1,12 +1,13 @@
-#include "runtime/engine.h"
+#include "engine.h"
 
-namespace cw_engine
+namespace Compass
 {
-    bool g_is_editor_mode {false};
-    std::unordered_set<std::string> g_editor_tick_component_types {};
+    bool g_is_editor_mode{false};
+    std::unordered_set<std::string> g_editor_tick_component_types{};
 
-    void cw_engine::CW_Engine::startEngine(const std::string &config_file_path)
+    void CompassEngine::startEngine(const std::string &config_file_path)
     {
         
     }
+
 }

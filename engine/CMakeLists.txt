@@ -1,0 +1,2 @@
+
+set(ENGINE_ROOT_DIR ${PI})
