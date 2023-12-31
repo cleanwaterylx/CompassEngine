@@ -1,2 +1,2 @@
-# CompasEngine
+# CompassEngine
 A game engine
