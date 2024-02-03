@@ -51,10 +51,10 @@ namespace Compass
     *static_cast<type*>(dst_ptr) = *static_cast<type*>(src_ptr.getPtr());
 
 #define TypeMetaDef(class_name, ptr) \
-    Piccolo::Reflection::ReflectionInstance(Piccolo::Reflection::TypeMeta::newMetaFromName(#class_name), (class_name*)ptr)
+    Compass::Reflection::ReflectionInstance(Compass::Reflection::TypeMeta::newMetaFromName(#class_name), (class_name*)ptr)
 
 #define TypeMetaDefPtr(class_name, ptr) \
-    new Piccolo::Reflection::ReflectionInstance(Piccolo::Reflection::TypeMeta::newMetaFromName(#class_name), \
+    new Compass::Reflection::ReflectionInstance(Compass::Reflection::TypeMeta::newMetaFromName(#class_name), \
                                               (class_name*)ptr)
 
     template<typename T, typename U, typename = void>

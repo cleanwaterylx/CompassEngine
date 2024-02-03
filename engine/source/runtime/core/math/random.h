@@ -4,7 +4,7 @@
 #include <cfloat>
 #include <random>
 
-namespace Piccolo
+namespace Compass
 {
     template<typename NumericType>
     using uniform_distribution = typename std::conditional<std::is_integral<NumericType>::value,
