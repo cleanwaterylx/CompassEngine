@@ -7,7 +7,7 @@ namespace Compass{
     {{#class_defines}}class {{class_name}};
     {{/class_defines}}
 namespace Reflection{
-{{#class_defines}}namespace TypeFieldReflectionOparator{
+{{#class_defines}}namespace TypeFieldReflectionOperator{
     class Type{{class_name}}Operator{
     public:
         static const char* getClassName(){ return "{{class_name}}";}
@@ -38,7 +38,7 @@ namespace Reflection{
         static bool isArray_{{class_field_name}}(){ {{#class_field_is_vector}}return true;{{/class_field_is_vector}}{{^class_field_is_vector}}return false;{{/class_field_is_vector}} }
         {{/class_field_defines}}
     };
-}//namespace TypeFieldReflectionOparator
+}//namespace TypeFieldReflectionOperator
 {{#vector_exist}}namespace ArrayReflectionOperator{
 {{#vector_defines}}#ifndef Array{{vector_useful_name}}OperatorMACRO
 #define Array{{vector_useful_name}}OperatorMACRO
@@ -65,12 +65,12 @@ namespace Reflection{
 
     void TypeWrapperRegister_{{class_name}}(){
         {{#class_field_defines}}FieldFunctionTuple* f_field_function_tuple_{{class_field_name}}=new FieldFunctionTuple(
-            &TypeFieldReflectionOparator::Type{{class_name}}Operator::set_{{class_field_name}},
-            &TypeFieldReflectionOparator::Type{{class_name}}Operator::get_{{class_field_name}},
-            &TypeFieldReflectionOparator::Type{{class_name}}Operator::getClassName,
-            &TypeFieldReflectionOparator::Type{{class_name}}Operator::getFieldName_{{class_field_name}},
-            &TypeFieldReflectionOparator::Type{{class_name}}Operator::getFieldTypeName_{{class_field_name}},
-            &TypeFieldReflectionOparator::Type{{class_name}}Operator::isArray_{{class_field_name}});
+            &TypeFieldReflectionOperator::Type{{class_name}}Operator::set_{{class_field_name}},
+            &TypeFieldReflectionOperator::Type{{class_name}}Operator::get_{{class_field_name}},
+            &TypeFieldReflectionOperator::Type{{class_name}}Operator::getClassName,
+            &TypeFieldReflectionOperator::Type{{class_name}}Operator::getFieldName_{{class_field_name}},
+            &TypeFieldReflectionOperator::Type{{class_name}}Operator::getFieldTypeName_{{class_field_name}},
+            &TypeFieldReflectionOperator::Type{{class_name}}Operator::isArray_{{class_field_name}});
         REGISTER_FIELD_TO_MAP("{{class_name}}", f_field_function_tuple_{{class_field_name}});
         {{/class_field_defines}}
         
@@ -83,9 +83,9 @@ namespace Reflection{
         REGISTER_ARRAY_TO_MAP("{{{vector_type_name}}}", f_array_tuple_{{vector_useful_name}});
         {{/vector_defines}}{{/vector_exist}}
         {{#class_need_register}}ClassFunctionTuple* f_class_function_tuple_{{class_name}}=new ClassFunctionTuple(
-            &TypeFieldReflectionOparator::Type{{class_name}}Operator::get{{class_name}}BaseClassReflectionInstanceList,
-            &TypeFieldReflectionOparator::Type{{class_name}}Operator::constructorWithJson,
-            &TypeFieldReflectionOparator::Type{{class_name}}Operator::writeByName);
+            &TypeFieldReflectionOperator::Type{{class_name}}Operator::get{{class_name}}BaseClassReflectionInstanceList,
+            &TypeFieldReflectionOperator::Type{{class_name}}Operator::constructorWithJson,
+            &TypeFieldReflectionOperator::Type{{class_name}}Operator::writeByName);
         REGISTER_BASE_CLASS_TO_MAP("{{class_name}}", f_class_function_tuple_{{class_name}});
         {{/class_need_register}}
     }{{/class_defines}}

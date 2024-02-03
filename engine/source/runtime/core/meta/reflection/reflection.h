@@ -219,9 +219,10 @@ namespace Compass
         public:
             ReflectionPtr(std::string type_name, T* instance) : m_type_name(type_name), m_instance(instance) {}
             ReflectionPtr() : m_type_name(), m_instance(nullptr) {}
+
             ReflectionPtr(const ReflectionPtr& dest) : m_type_name(dest.m_type_name), m_instance(dest.m_instance) {}
 
-            template<typename U>
+            template<typename U /*, typename = typename std::enable_if<std::is_safely_castable<T*, U*>::value>::type */>
             ReflectionPtr<T>& operator=(const ReflectionPtr<U>& dest)
             {
                 if (this == static_cast<void*>(&dest))
@@ -233,7 +234,7 @@ namespace Compass
                 return *this;
             }
 
-            template<typename U>
+            template<typename U /*, typename = typename std::enable_if<std::is_safely_castable<T*, U*>::value>::type*/>
             ReflectionPtr<T>& operator=(ReflectionPtr<U>&& dest)
             {
                 if (this == static_cast<void*>(&dest))
@@ -279,25 +280,29 @@ namespace Compass
 
             bool operator!=(const ReflectionPtr<T>& rhs_ptr) const { return (m_instance != rhs_ptr.m_instance); }
 
-            
-            template<typename T1>
+            template<
+                typename T1 /*, typename = typename std::enable_if<std::is_safely_castable<T*, T1*>::value>::type*/>
+            explicit operator T1*()
             {
                 return static_cast<T1*>(m_instance);
             }
 
-            template<typename T1 >
+            template<
+                typename T1 /*, typename = typename std::enable_if<std::is_safely_castable<T*, T1*>::value>::type*/>
             operator ReflectionPtr<T1>()
             {
                 return ReflectionPtr<T1>(m_type_name, (T1*)(m_instance));
             }
 
-            template<typename T1>
+            template<
+                typename T1 /*, typename = typename std::enable_if<std::is_safely_castable<T*, T1*>::value>::type*/>
             explicit operator const T1*() const
             {
                 return static_cast<T1*>(m_instance);
             }
 
-            template<typename T1>
+            template<
+                typename T1 /*, typename = typename std::enable_if<std::is_safely_castable<T*, T1*>::value>::type*/>
             operator const ReflectionPtr<T1>() const
             {
                 return ReflectionPtr<T1>(m_type_name, (T1*)(m_instance));
@@ -321,8 +326,8 @@ namespace Compass
 
         private:
             std::string m_type_name {""};
-            typedef T m_type;
-            T* m_instance {nullptr};
+            typedef T   m_type;
+            T*          m_instance {nullptr};
         };
 
         
