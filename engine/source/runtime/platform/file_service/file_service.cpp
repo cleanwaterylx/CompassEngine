@@ -3,7 +3,7 @@
 
 namespace Compass
 {
-    std::vector<std::filesystem::path> Compass::filesystem::getFiles(const std::filesystem::path &directory)
+    std::vector<std::filesystem::path> Compass::FileSystem::getFiles(const std::filesystem::path &directory)
     {
         std::vector<std::filesystem::path> files;
         for (auto const& directory_entry : std::filesystem::recursive_directory_iterator {directory})

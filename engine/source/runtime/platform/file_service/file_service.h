@@ -5,7 +5,7 @@
 
 namespace Compass
 {
-    class filesystem
+    class FileSystem
     {
     public:
         /// @brief 获取目录下的所有文件名
