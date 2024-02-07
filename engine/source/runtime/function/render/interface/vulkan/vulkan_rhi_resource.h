@@ -5,7 +5,7 @@
 #include <vulkan/vulkan.h>
 #include <optional>
 
-namespace Piccolo
+namespace Compass
 {
     class VulkanBuffer : public RHIBuffer
     {

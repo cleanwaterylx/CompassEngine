@@ -74,7 +74,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace Piccolo
+namespace Compass
 {
     VulkanRHI::~VulkanRHI()
     {
@@ -634,7 +634,7 @@ namespace Piccolo
         appInfo.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         appInfo.pApplicationName   = "piccolo_renderer";
         appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.pEngineName        = "Piccolo";
+        appInfo.pEngineName        = "Compass";
         appInfo.engineVersion      = VK_MAKE_VERSION(1, 0, 0);
         appInfo.apiVersion         = m_vulkan_api_version;
 
@@ -2716,7 +2716,7 @@ namespace Piccolo
     {
         switch (type)
         {
-        case Piccolo::Default_Sampler_Linear:
+        case Compass::Default_Sampler_Linear:
             if (m_linear_sampler == nullptr)
             {
                 m_linear_sampler = new VulkanSampler();
@@ -2725,7 +2725,7 @@ namespace Piccolo
             return m_linear_sampler;
             break;
 
-        case Piccolo::Default_Sampler_Nearest:
+        case Compass::Default_Sampler_Nearest:
             if (m_nearest_sampler == nullptr)
             {
                 m_nearest_sampler = new VulkanSampler();
@@ -3126,11 +3126,11 @@ namespace Piccolo
     {
         switch (type)
         {
-        case Piccolo::Default_Sampler_Linear:
+        case Compass::Default_Sampler_Linear:
             VulkanUtil::destroyLinearSampler(m_device);
             delete(m_linear_sampler);
             break;
-        case Piccolo::Default_Sampler_Nearest:
+        case Compass::Default_Sampler_Nearest:
             VulkanUtil::destroyNearestSampler(m_device);
             delete(m_nearest_sampler);
             break;
@@ -3328,7 +3328,7 @@ namespace Piccolo
         }
     }
 
-    Piccolo::QueueFamilyIndices VulkanRHI::findQueueFamilies(VkPhysicalDevice physicalm_device) // for device and surface
+    Compass::QueueFamilyIndices VulkanRHI::findQueueFamilies(VkPhysicalDevice physicalm_device) // for device and surface
     {
         QueueFamilyIndices indices;
         uint32_t           queue_family_count = 0;
@@ -3409,7 +3409,7 @@ namespace Piccolo
         return true;
     }
 
-    Piccolo::SwapChainSupportDetails VulkanRHI::querySwapChainSupport(VkPhysicalDevice physicalm_device)
+    Compass::SwapChainSupportDetails VulkanRHI::querySwapChainSupport(VkPhysicalDevice physicalm_device)
     {
         SwapChainSupportDetails details_result;
 
@@ -3607,4 +3607,4 @@ namespace Piccolo
         m_current_frame_index = index;
     }
 
-} // namespace Piccolo
+} // namespace Compass

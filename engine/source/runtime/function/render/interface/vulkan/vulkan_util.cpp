@@ -7,7 +7,7 @@
 #include <cstring>
 #include <stdexcept>
 
-namespace Piccolo
+namespace Compass
 {
     std::unordered_map<uint32_t, VkSampler> VulkanUtil::m_mipmap_sampler_map;
     VkSampler                               VulkanUtil::m_nearest_sampler = VK_NULL_HANDLE;
@@ -1033,4 +1033,4 @@ namespace Piccolo
         vkDestroySampler(device, m_linear_sampler, nullptr);
         m_linear_sampler = VK_NULL_HANDLE;
     }
-} // namespace Piccolo
+} // namespace Compass

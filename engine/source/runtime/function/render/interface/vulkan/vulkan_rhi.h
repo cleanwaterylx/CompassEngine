@@ -10,7 +10,8 @@
 #include <map>
 #include <vector>
 
-namespace Piccolo
+
+namespace Compass
 {
     
 
@@ -311,4 +312,4 @@ namespace Piccolo
                    chooseSwapchainPresentModeFromDetails(const std::vector<VkPresentModeKHR>& available_present_modes);
         VkExtent2D chooseSwapchainExtentFromDetails(const VkSurfaceCapabilitiesKHR& capabilities);
     };
-} // namespace Piccolo
+} // namespace Compass

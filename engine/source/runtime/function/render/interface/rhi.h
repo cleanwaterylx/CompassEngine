@@ -9,7 +9,7 @@
 #include <functional>
 
 #include "rhi_struct.h"
-namespace Piccolo
+namespace Compass
 {
     class WindowSystem;
 
@@ -175,4 +175,4 @@ namespace Piccolo
     };
 
     inline RHI::~RHI() = default;
-} // namespace Piccolo
+} // namespace Compass

@@ -60,6 +60,11 @@ target_include_directories(
   ${TARGET_NAME}
   PUBLIC $<BUILD_INTERFACE:${vulkan_include}>)
 
+target_include_directories(
+  ${TARGET_NAME} 
+  PUBLIC $<BUILD_INTERFACE:${THIRD_PARTY_DIR}/vulkanmemoryallocator/include>
+)
+
 add_dependencies(${TARGET_NAME} ${SHADER_COMPILE_TARGET})
 
 target_include_directories(
@@ -80,10 +85,7 @@ target_include_directories(
   PUBLIC $<BUILD_INTERFACE:${json_inlcude}>
 )
 
-target_include_directories(
-  ${TARGET_NAME} 
-  PUBLIC $<BUILD_INTERFACE:${THIRD_PARTY_DIR}/vulkanmemoryallocator/include>
-)
+
 
 target_include_directories(
   ${TARGET_NAME} 

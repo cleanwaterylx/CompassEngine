@@ -10,7 +10,7 @@
 /// <summary>
 /// RHI Type
 /// </summary>
-namespace Piccolo
+namespace Compass
 {
 #define RHI_MAX_EXTENSION_NAME_SIZE        256U
 #define RHI_MAX_DESCRIPTION_SIZE           256U
@@ -1681,7 +1681,7 @@ namespace Piccolo
     typedef uint32_t RHISampleMask;
 }
 
-namespace Piccolo
+namespace Compass
 {
     enum class PICCOLO_IMAGE_TYPE : uint8_t
     {
@@ -1821,15 +1821,15 @@ namespace Piccolo
         std::shared_ptr<TextureData> m_occlusion_texture;
         std::shared_ptr<TextureData> m_emissive_texture;
     };
-} // namespace Piccolo
+} // namespace Compass
 
 template<>
-struct std::hash<Piccolo::MeshSourceDesc>
+struct std::hash<Compass::MeshSourceDesc>
 {
-    size_t operator()(const Piccolo::MeshSourceDesc& rhs) const noexcept { return rhs.getHashValue(); }
+    size_t operator()(const Compass::MeshSourceDesc& rhs) const noexcept { return rhs.getHashValue(); }
 };
 template<>
-struct std::hash<Piccolo::MaterialSourceDesc>
+struct std::hash<Compass::MaterialSourceDesc>
 {
-    size_t operator()(const Piccolo::MaterialSourceDesc& rhs) const noexcept { return rhs.getHashValue(); }
+    size_t operator()(const Compass::MaterialSourceDesc& rhs) const noexcept { return rhs.getHashValue(); }
 };
