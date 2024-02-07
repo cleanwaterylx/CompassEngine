@@ -1,7 +1,6 @@
 #pragma once
 
 #include "runtime/core/meta/reflection/reflection.h"
-#include "transform_component.h"
 
 namespace Compass
 {
