@@ -1,6 +1,7 @@
 #pragma once
 
 #include "runtime/core/meta/reflection/reflection.h"
+#include "transform_component.h"
 
 namespace Compass
 {
@@ -27,7 +28,6 @@ namespace Compass
         bool isDirty() const { return m_is_dirty; }
 
         void setDirtyFlag(bool is_dirty) { m_is_dirty = is_dirty; }
-        
 
         bool m_tick_in_editor_mode {false};
 
