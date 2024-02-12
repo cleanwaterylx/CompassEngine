@@ -4,7 +4,7 @@
 #include "runtime/core/math/transform.h"
 
 #include "runtime/function/framework/component/component.h"
-// #include "runtime/function/framework/object/object.h"
+#include "runtime/function/framework/object/object.h"
 
 namespace Compass
 {

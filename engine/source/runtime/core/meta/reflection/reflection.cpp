@@ -285,14 +285,12 @@ namespace Compass
         void ArrayAccessor::set(int index, void *instance, void *element_value)
         {
             size_t count = getSize(instance);
-            // todo: should check validation(index < count)
             std::get<0> (*m_func)(index, instance, element_value);
         }
 
         void *ArrayAccessor::get(int index, void *instance)
         {
             size_t count = getSize(instance);
-            // todo: should check validation(index < count)
             return std::get<1>(*m_func)(index, instance);
         }
 
