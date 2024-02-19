@@ -632,7 +632,7 @@ namespace Compass
         // app info
         VkApplicationInfo appInfo {};
         appInfo.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        appInfo.pApplicationName   = "piccolo_renderer";
+        appInfo.pApplicationName   = "compass_renderer";
         appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.pEngineName        = "Compass";
         appInfo.engineVersion      = VK_MAKE_VERSION(1, 0, 0);
@@ -2945,7 +2945,7 @@ namespace Compass
 
     void VulkanRHI::createSwapchainImageViews()
     {
-        m_swapchain_imageviews.resize(m_swapchain_images.size());
+        m_swapchain_imageviews.resize(m_swapchain_images.size());  // every vkImage need a vkImageView 
 
         // create imageview (one for each this time) for all swapchain images
         for (size_t i = 0; i < m_swapchain_images.size(); i++)

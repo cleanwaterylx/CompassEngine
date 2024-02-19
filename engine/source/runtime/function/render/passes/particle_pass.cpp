@@ -1923,7 +1923,6 @@ namespace Compass
         m_ubo.extent.x   = m_rhi->getSwapchainInfo().scissor->extent.width;
         m_ubo.extent.y   = m_rhi->getSwapchainInfo().scissor->extent.height;
 
-        // todo
         m_ubo.extent.z = g_runtime_global_context.m_render_system->getRenderCamera()->m_znear;
         m_ubo.extent.w = g_runtime_global_context.m_render_system->getRenderCamera()->m_zfar;
         memcpy(m_particle_compute_buffer_mapped, &m_ubo, sizeof(m_ubo));
