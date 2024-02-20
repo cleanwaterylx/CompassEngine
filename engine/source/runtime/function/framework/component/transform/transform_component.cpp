@@ -2,6 +2,8 @@
 
 #include "runtime/engine.h"
 
+#include "runtime/function/framework/component/rigidbody/rigidbody_component.h"
+
 namespace Compass
 {
     void TransformComponent::postLoadResource(std::weak_ptr<GObject> parent_object)
@@ -38,18 +40,29 @@ namespace Compass
     {
         std::swap(m_current_index, m_next_index);
 
-        // todo RigidBodyComponent
-        // if (m_is_dirty)
-        // {
-        //     // update transform component, dirty flag will be reset in mesh component
-        //     tryUpdateRigidBodyComponent();
-        // }
+        if (m_is_dirty)
+        {
+            // update transform component, dirty flag will be reset in mesh component
+            tryUpdateRigidBodyComponent();
+        }
 
         if(g_is_editor_mode)
         {
             m_transform_buffer[m_next_index] = m_transform;
         }
     }
+    
+    void TransformComponent::tryUpdateRigidBodyComponent()
+    {
+        if (!m_parent_object.lock())
+            return;
 
+        RigidBodyComponent* rigid_body_component = m_parent_object.lock()->tryGetComponent(RigidBodyComponent);
+        if (rigid_body_component)
+        {
+            rigid_body_component->updateGlobalTransform(m_transform_buffer[m_current_index], m_is_scale_dirty);
+            m_is_scale_dirty = false;
+        }
+    }
 
 } // namespace Compass

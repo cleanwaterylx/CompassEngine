@@ -35,6 +35,8 @@ namespace Compass
 
         void tick(float delta_time) override;
 
+        void tryUpdateRigidBodyComponent();
+
     protected:
         META(Enable)
         Transform m_transform;
