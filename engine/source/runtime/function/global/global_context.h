@@ -38,7 +38,7 @@ namespace Compass
         std::shared_ptr<WindowSystem>      m_window_system;
         std::shared_ptr<RenderSystem>      m_render_system;
         std::shared_ptr<ParticleManager>   m_particle_manager;
-        std::shared_ptr<DebugDrawManager>  m_debug_draw_manager;
+        std::shared_ptr<DebugDrawManager>  m_debugdraw_manager;
         std::shared_ptr<RenderDebugConfig> m_render_debug_config;
     };
     //定义全局管理变量

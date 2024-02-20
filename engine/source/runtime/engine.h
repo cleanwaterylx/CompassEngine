@@ -9,13 +9,13 @@
 namespace Compass
 {
     extern bool g_is_editor_mode;
-    extern std::unordered_set<std::string> g_editor_tick_component_types; // 需要tick的compoent类型
+    extern std::unordered_set<std::string> g_editor_tick_component_types; // 需要tick的component类型
 
     class CompassEngine
     {
         friend class CompassEditor;
 
-        static const float s_fps_aplha;
+        static const float s_fps_alpha;
 
     public:
         void startEngine(const std::string& config_file_path);
