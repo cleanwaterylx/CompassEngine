@@ -573,6 +573,7 @@ namespace Compass
 
     size_t EditorSceneManager::getGuidOfPickedMesh(const Vector2& picked_uv) const
     {
+        // pick_pass get id
         return g_editor_global_context.m_render_system->getGuidOfPickedMesh(picked_uv);
     }
 

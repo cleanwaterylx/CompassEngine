@@ -250,6 +250,10 @@ namespace Compass
         base_pass_color_attachments_reference[2].attachment = &gbuffer_albedo_attachment_description - attachments;
         base_pass_color_attachments_reference[2].layout     = RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+        // typedef struct VkAttachmentReference {
+        //      uint32_t         attachment;  //attachment是一个整数值，用于识别VkRenderPassCreateInfo::pAttachments中相应索引的Attachment
+        //      VkImageLayout    layout;
+        // }    VkAttachmentReference;
         RHIAttachmentReference base_pass_depth_attachment_reference {};
         base_pass_depth_attachment_reference.attachment = &depth_attachment_description - attachments;
         base_pass_depth_attachment_reference.layout     = RHI_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;

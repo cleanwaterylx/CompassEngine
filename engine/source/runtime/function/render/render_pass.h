@@ -12,7 +12,9 @@
 namespace Compass
 {
     class VulkanRHI;
-
+    
+    // 匿名枚举 <=> 定义
+    // subpass
     enum 
     {
         _main_camera_pass_gbuffer_a                     = 0,
