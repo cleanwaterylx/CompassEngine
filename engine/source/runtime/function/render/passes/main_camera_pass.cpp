@@ -57,6 +57,7 @@ namespace Compass
         m_framebuffer.attachments[_main_camera_pass_gbuffer_a].format          = RHI_FORMAT_R8G8B8A8_UNORM;
         m_framebuffer.attachments[_main_camera_pass_gbuffer_b].format          = RHI_FORMAT_R8G8B8A8_UNORM;
         m_framebuffer.attachments[_main_camera_pass_gbuffer_c].format          = RHI_FORMAT_R8G8B8A8_SRGB;
+        m_framebuffer.attachments[_main_camera_pass_gbuffer_d].format          = RHI_FORMAT_R16G16B16A16_SFLOAT;
         m_framebuffer.attachments[_main_camera_pass_backup_buffer_odd].format  = RHI_FORMAT_R16G16B16A16_SFLOAT;
         m_framebuffer.attachments[_main_camera_pass_backup_buffer_even].format = RHI_FORMAT_R16G16B16A16_SFLOAT;
 
@@ -170,6 +171,17 @@ namespace Compass
         gbuffer_albedo_attachment_description.initialLayout  = RHI_IMAGE_LAYOUT_UNDEFINED;
         gbuffer_albedo_attachment_description.finalLayout    = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
+        // position attachment
+        RHIAttachmentDescription& gbuffer_position_attachment_description = attachments[_main_camera_pass_gbuffer_d];
+        gbuffer_position_attachment_description.format  = m_framebuffer.attachments[_main_camera_pass_gbuffer_d].format;
+        gbuffer_position_attachment_description.samples = RHI_SAMPLE_COUNT_1_BIT;
+        gbuffer_position_attachment_description.loadOp  = RHI_ATTACHMENT_LOAD_OP_CLEAR;
+        gbuffer_position_attachment_description.storeOp = RHI_ATTACHMENT_STORE_OP_DONT_CARE;
+        gbuffer_position_attachment_description.stencilLoadOp  = RHI_ATTACHMENT_LOAD_OP_DONT_CARE;
+        gbuffer_position_attachment_description.stencilStoreOp = RHI_ATTACHMENT_STORE_OP_DONT_CARE;
+        gbuffer_position_attachment_description.initialLayout  = RHI_IMAGE_LAYOUT_UNDEFINED;
+        gbuffer_position_attachment_description.finalLayout    = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
         RHIAttachmentDescription& backup_odd_color_attachment_description =
             attachments[_main_camera_pass_backup_buffer_odd];
         backup_odd_color_attachment_description.format =
@@ -241,7 +253,11 @@ namespace Compass
 
         RHISubpassDescription subpasses[_main_camera_subpass_count] = {};
 
-        RHIAttachmentReference base_pass_color_attachments_reference[3] = {};
+        // typedef struct VkAttachmentReference {
+        //      uint32_t         attachment;  //attachment是一个整数值，用于识别VkRenderPassCreateInfo::pAttachments中相应索引的Attachment
+        //      VkImageLayout    layout;
+        // }    VkAttachmentReference;
+        RHIAttachmentReference base_pass_color_attachments_reference[4] = {};
         base_pass_color_attachments_reference[0].attachment = &gbuffer_normal_attachment_description - attachments;
         base_pass_color_attachments_reference[0].layout     = RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         base_pass_color_attachments_reference[1].attachment =
@@ -249,11 +265,9 @@ namespace Compass
         base_pass_color_attachments_reference[1].layout     = RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         base_pass_color_attachments_reference[2].attachment = &gbuffer_albedo_attachment_description - attachments;
         base_pass_color_attachments_reference[2].layout     = RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        base_pass_color_attachments_reference[3].attachment = &gbuffer_position_attachment_description - attachments;
+        base_pass_color_attachments_reference[3].layout     = RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        // typedef struct VkAttachmentReference {
-        //      uint32_t         attachment;  //attachment是一个整数值，用于识别VkRenderPassCreateInfo::pAttachments中相应索引的Attachment
-        //      VkImageLayout    layout;
-        // }    VkAttachmentReference;
         RHIAttachmentReference base_pass_depth_attachment_reference {};
         base_pass_depth_attachment_reference.attachment = &depth_attachment_description - attachments;
         base_pass_depth_attachment_reference.layout     = RHI_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -887,7 +901,7 @@ namespace Compass
             multisample_state_create_info.sampleShadingEnable  = RHI_FALSE;
             multisample_state_create_info.rasterizationSamples = RHI_SAMPLE_COUNT_1_BIT;
 
-            RHIPipelineColorBlendAttachmentState color_blend_attachments[3] = {};
+            RHIPipelineColorBlendAttachmentState color_blend_attachments[4] = {};
             color_blend_attachments[0].colorWriteMask = RHI_COLOR_COMPONENT_R_BIT | RHI_COLOR_COMPONENT_G_BIT |
                                                         RHI_COLOR_COMPONENT_B_BIT | RHI_COLOR_COMPONENT_A_BIT;
             color_blend_attachments[0].blendEnable         = RHI_FALSE;
@@ -915,6 +929,15 @@ namespace Compass
             color_blend_attachments[2].srcAlphaBlendFactor = RHI_BLEND_FACTOR_ONE;
             color_blend_attachments[2].dstAlphaBlendFactor = RHI_BLEND_FACTOR_ZERO;
             color_blend_attachments[2].alphaBlendOp        = RHI_BLEND_OP_ADD;
+            color_blend_attachments[3].colorWriteMask      = RHI_COLOR_COMPONENT_R_BIT | RHI_COLOR_COMPONENT_G_BIT |
+                                                             RHI_COLOR_COMPONENT_B_BIT | RHI_COLOR_COMPONENT_A_BIT;
+            color_blend_attachments[3].blendEnable         = RHI_FALSE;
+            color_blend_attachments[3].srcColorBlendFactor = RHI_BLEND_FACTOR_ONE;
+            color_blend_attachments[3].dstColorBlendFactor = RHI_BLEND_FACTOR_ZERO;
+            color_blend_attachments[3].colorBlendOp        = RHI_BLEND_OP_ADD;
+            color_blend_attachments[3].srcAlphaBlendFactor = RHI_BLEND_FACTOR_ONE;
+            color_blend_attachments[3].dstAlphaBlendFactor = RHI_BLEND_FACTOR_ZERO;
+            color_blend_attachments[3].alphaBlendOp        = RHI_BLEND_OP_ADD;
 
             RHIPipelineColorBlendStateCreateInfo color_blend_state_create_info = {};
             color_blend_state_create_info.sType         = RHI_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -1769,7 +1792,7 @@ namespace Compass
         RHIDescriptorSetAllocateInfo gbuffer_light_global_descriptor_set_alloc_info;
         gbuffer_light_global_descriptor_set_alloc_info.sType          = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         gbuffer_light_global_descriptor_set_alloc_info.pNext          = NULL;
-        gbuffer_light_global_descriptor_set_alloc_info.descriptorPool = m_rhi->getDescriptorPoor();
+        gbuffer_light_global_descriptor_set_alloc_info.descriptorPool = m_rhi->getDescriptorPoor();  // todo
         gbuffer_light_global_descriptor_set_alloc_info.descriptorSetCount = 1;
         gbuffer_light_global_descriptor_set_alloc_info.pSetLayouts = &m_descriptor_infos[_deferred_lighting].layout;
 

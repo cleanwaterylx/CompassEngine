@@ -127,6 +127,7 @@ namespace Compass
         m_particle_collision_perframe_storage_buffer_object.proj_view_matrix = proj_view_matrix;
         m_particle_collision_perframe_storage_buffer_object.proj_inv_matrix  = proj_matrix.inverse();
 
+        // set storage_buffer data
         m_mesh_perframe_storage_buffer_object.proj_view_matrix = proj_view_matrix;
         m_mesh_perframe_storage_buffer_object.camera_position = camera_position;
         m_mesh_perframe_storage_buffer_object.ambient_light = ambient_light;
