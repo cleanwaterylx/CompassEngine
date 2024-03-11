@@ -1896,6 +1896,7 @@ namespace Compass
                 m_framebuffer.attachments[_main_camera_pass_gbuffer_a].view,
                 m_framebuffer.attachments[_main_camera_pass_gbuffer_b].view,
                 m_framebuffer.attachments[_main_camera_pass_gbuffer_c].view,
+                m_framebuffer.attachments[_main_camera_pass_gbuffer_d].view,
                 m_framebuffer.attachments[_main_camera_pass_backup_buffer_odd].view,
                 m_framebuffer.attachments[_main_camera_pass_backup_buffer_even].view,
                 m_framebuffer.attachments[_main_camera_pass_post_process_buffer_odd].view,
