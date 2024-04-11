@@ -71,7 +71,8 @@ for (highp int light_index = 0; light_index < int(point_light_num) && light_inde
 
 // direct ambient contribution
 highp vec3 La = vec3(0.0f, 0.0f, 0.0f);
-La            = basecolor * ambient_light;
+highp float ao = subpassLoad(in_ssao_blur).r;
+La            = basecolor * ambient_light * ao;
 
 // indirect environment
 highp vec3 irradiance = texture(irradiance_sampler, origin_samplecube_N).rgb;

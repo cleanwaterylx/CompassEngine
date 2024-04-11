@@ -12,6 +12,7 @@ namespace Compass
     std::unordered_map<uint32_t, VkSampler> VulkanUtil::m_mipmap_sampler_map;
     VkSampler                               VulkanUtil::m_nearest_sampler = VK_NULL_HANDLE;
     VkSampler                               VulkanUtil::m_linear_sampler  = VK_NULL_HANDLE;
+    VkSampler                               VulkanUtil::m_repeat_sampler  = VK_NULL_HANDLE;
 
     uint32_t VulkanUtil::findMemoryType(VkPhysicalDevice      physical_device,
                                         uint32_t              type_filter,
@@ -1022,6 +1023,42 @@ namespace Compass
         return m_linear_sampler;
     }
 
+    // create repeat sampler
+    VkSampler VulkanUtil::getOrCreateRepeatSampler(VkPhysicalDevice physical_device, VkDevice device)
+    {
+        if (m_repeat_sampler == VK_NULL_HANDLE)
+        {
+            VkPhysicalDeviceProperties physical_device_properties {};
+            vkGetPhysicalDeviceProperties(physical_device, &physical_device_properties);
+
+            VkSamplerCreateInfo samplerInfo {};
+
+            samplerInfo.sType                   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+            samplerInfo.magFilter               = VK_FILTER_LINEAR;
+            samplerInfo.minFilter               = VK_FILTER_LINEAR;
+            samplerInfo.mipmapMode              = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+            samplerInfo.addressModeU            = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            samplerInfo.addressModeV            = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            samplerInfo.addressModeW            = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            samplerInfo.mipLodBias              = 0.0f;
+            samplerInfo.anisotropyEnable        = VK_FALSE;
+            samplerInfo.maxAnisotropy           = physical_device_properties.limits.maxSamplerAnisotropy; // close :1.0f
+            samplerInfo.compareEnable           = VK_FALSE;
+            samplerInfo.compareOp               = VK_COMPARE_OP_ALWAYS;
+            samplerInfo.minLod                  = 0.0f;
+            samplerInfo.maxLod                  = 0.0f; 
+            samplerInfo.borderColor             = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+            samplerInfo.unnormalizedCoordinates = VK_FALSE;
+
+            if (vkCreateSampler(device, &samplerInfo, nullptr, &m_repeat_sampler) != VK_SUCCESS)
+            {
+                LOG_ERROR("vk create sampler");
+            }
+        }
+
+        return m_repeat_sampler;
+    }
+
     void VulkanUtil::destroyNearestSampler(VkDevice device)
     {
         vkDestroySampler(device, m_nearest_sampler, nullptr);
@@ -1031,6 +1068,12 @@ namespace Compass
     void VulkanUtil::destroyLinearSampler(VkDevice device)
     {
         vkDestroySampler(device, m_linear_sampler, nullptr);
+        m_linear_sampler = VK_NULL_HANDLE;
+    }
+
+    void VulkanUtil::destroyRepeatSampler(VkDevice device)
+    {
+        vkDestroySampler(device, m_repeat_sampler, nullptr);
         m_linear_sampler = VK_NULL_HANDLE;
     }
 } // namespace Compass

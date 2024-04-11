@@ -21,6 +21,8 @@ namespace Compass
     static uint32_t const s_max_point_light_count                = 15;
     // should sync the macros in "shader_include/constants.h"
 
+    static uint32_t const s_ssao_kernel_count = 64;
+
     struct VulkanSceneDirectionalLight
     {
         Vector3 direction;
@@ -40,6 +42,7 @@ namespace Compass
     struct MeshPerframeStorageBufferObject
     {
         Matrix4x4                   proj_view_matrix;
+        Matrix4x4                   view_matrix;
         Vector3                     camera_position;
         float                       _padding_camera_position;
         Vector3                     ambient_light;
@@ -51,6 +54,18 @@ namespace Compass
         VulkanScenePointLight       scene_point_lights[s_max_point_light_count];
         VulkanSceneDirectionalLight scene_directional_light;
         Matrix4x4                   directional_light_proj_view;
+    };
+
+    // ssao kernel
+    struct SSAOKernelObject
+    {
+        Matrix4x4 proj_mat;
+        Matrix4x4 view_mat;
+        Vector4 ssao_kernel[s_ssao_kernel_count];
+        int offset_x;
+        int offset_y;
+        int width;
+        int height;
     };
 
     struct VulkanMeshInstance

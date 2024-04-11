@@ -1,10 +1,10 @@
-#include "runtime/function/render/passes/ssao_pass.h"
+#include "runtime/function/render/passes/ssao_blur_pass.h"
 #include "runtime/function/render/render_resource.h"
 
 #include "runtime/function/render/interface/vulkan/vulkan_rhi.h"
 #include "runtime/function/render/interface/vulkan/vulkan_util.h"
 
-#include <ssao_frag.h>
+#include <ssao_blur_frag.h>
 #include <ssao_vert.h>
 
 #include <stdexcept>
@@ -13,11 +13,11 @@
 
 namespace Compass
 {
-    void SSAOPass::initialize(const RenderPassInitInfo* init_info)
+    void SSAOBlurPass::initialize(const RenderPassInitInfo* init_info)
     {
         RenderPass::initialize(nullptr);
 
-        const SSAOPassInitInfo* _init_info = static_cast<const SSAOPassInitInfo*>(init_info);
+        const SSAOBlurPassInitInfo* _init_info = static_cast<const SSAOBlurPassInitInfo*>(init_info);
 
         // ssao_pass.renderpass = main_camera.renderpass
         m_framebuffer.render_pass                  = _init_info->render_pass;
@@ -25,38 +25,25 @@ namespace Compass
         setupDescriptorSetLayout();
         setupPipelines();
         setupDescriptorSet();
-        setupSSAOKernel(m_render_resource);
-        updateAfterFramebufferRecreate(_init_info->input_attachment_pos, _init_info->input_attachment_normal);
+        updateAfterFramebufferRecreate(_init_info->input_attachment);
     }
 
-    void SSAOPass::setupDescriptorSetLayout()
+    void SSAOBlurPass::setupDescriptorSetLayout()
     {
         m_descriptor_infos.resize(1);
 
-        RHIDescriptorSetLayoutBinding ssao_global_layout_bindings[4] = {};
-        // gPosition gNormal gNoise
+        RHIDescriptorSetLayoutBinding ssao_global_layout_bindings[2] = {};
+        // ssao blur_object
 
-        RHIDescriptorSetLayoutBinding& gbuffer_global_layout_input_position_attachment_binding =
+        RHIDescriptorSetLayoutBinding& ssao_attachment_binding =
             ssao_global_layout_bindings[0];
-        gbuffer_global_layout_input_position_attachment_binding.binding         = 0;
-        gbuffer_global_layout_input_position_attachment_binding.descriptorType  = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        gbuffer_global_layout_input_position_attachment_binding.descriptorCount = 1;
-        gbuffer_global_layout_input_position_attachment_binding.stageFlags      = RHI_SHADER_STAGE_FRAGMENT_BIT;
+        ssao_attachment_binding.binding         = 0;
+        ssao_attachment_binding.descriptorType  = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        ssao_attachment_binding.descriptorCount = 1;
+        ssao_attachment_binding.stageFlags      = RHI_SHADER_STAGE_FRAGMENT_BIT;
 
-        RHIDescriptorSetLayoutBinding& gbuffer_global_layout_input_normal_attachment_binding = ssao_global_layout_bindings[1];
-        gbuffer_global_layout_input_normal_attachment_binding.binding         = 1;
-        gbuffer_global_layout_input_normal_attachment_binding.descriptorType  = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        gbuffer_global_layout_input_normal_attachment_binding.descriptorCount = 1;
-        gbuffer_global_layout_input_normal_attachment_binding.stageFlags      = RHI_SHADER_STAGE_FRAGMENT_BIT;
-
-        RHIDescriptorSetLayoutBinding& gbuffer_global_layout_noise_attachment_binding = ssao_global_layout_bindings[2];
-        gbuffer_global_layout_noise_attachment_binding.binding         = 2;
-        gbuffer_global_layout_noise_attachment_binding.descriptorType  = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;  
-        gbuffer_global_layout_noise_attachment_binding.descriptorCount = 1;
-        gbuffer_global_layout_noise_attachment_binding.stageFlags      = RHI_SHADER_STAGE_FRAGMENT_BIT;
-
-        RHIDescriptorSetLayoutBinding& ssao_kernel_layout_binding = ssao_global_layout_bindings[3];
-        ssao_kernel_layout_binding.binding         = 3;
+        RHIDescriptorSetLayoutBinding& ssao_kernel_layout_binding = ssao_global_layout_bindings[1];
+        ssao_kernel_layout_binding.binding         = 1;
         ssao_kernel_layout_binding.descriptorType  = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
         ssao_kernel_layout_binding.descriptorCount = 1;
         ssao_kernel_layout_binding.stageFlags      = RHI_SHADER_STAGE_FRAGMENT_BIT;
@@ -75,7 +62,7 @@ namespace Compass
         }
     }
 
-    void SSAOPass::setupPipelines()
+    void SSAOBlurPass::setupPipelines()
     {
         m_render_pipelines.resize(1);
 
@@ -91,7 +78,7 @@ namespace Compass
         }
 
         RHIShader* vert_shader_module = m_rhi->createShaderModule(SSAO_VERT);
-        RHIShader* frag_shader_module = m_rhi->createShaderModule(SSAO_FRAG);
+        RHIShader* frag_shader_module = m_rhi->createShaderModule(SSAO_BLUR_FRAG);
 
         RHIPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
         vert_pipeline_shader_stage_create_info.sType  = RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -196,7 +183,7 @@ namespace Compass
         pipelineInfo.pDepthStencilState  = &depth_stencil_create_info;
         pipelineInfo.layout              = m_render_pipelines[0].layout;
         pipelineInfo.renderPass          = m_framebuffer.render_pass;
-        pipelineInfo.subpass             = _main_camera_subpass_ssao;
+        pipelineInfo.subpass             = _main_camera_subpass_ssao_blur;
         pipelineInfo.basePipelineHandle  = RHI_NULL_HANDLE;
         pipelineInfo.pDynamicState       = &dynamic_state_create_info;
 
@@ -209,7 +196,7 @@ namespace Compass
         m_rhi->destroyShaderModule(frag_shader_module);
     }
 
-    void SSAOPass::setupDescriptorSet()
+    void SSAOBlurPass::setupDescriptorSet()
     {
         RHIDescriptorSetAllocateInfo ssao_global_descriptor_set_alloc_info;
         ssao_global_descriptor_set_alloc_info.sType          = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -225,86 +212,49 @@ namespace Compass
     }
 
     // Êµ¼ÊÎªdescriptor bind buffer sample 
-    void SSAOPass::updateAfterFramebufferRecreate(RHIImageView *input_attachment_pos, RHIImageView *input_attachment_normal)
+    void SSAOBlurPass::updateAfterFramebufferRecreate(RHIImageView *input_attachment)
     {
-        RHIDescriptorImageInfo gbuffer_position_input_attachment_info = {};
-        gbuffer_position_input_attachment_info.sampler =
+        RHIDescriptorImageInfo ssao_input_attachment_info = {};
+        ssao_input_attachment_info.sampler =
             m_rhi->getOrCreateDefaultSampler(Default_Sampler_Nearest);
-        gbuffer_position_input_attachment_info.imageView   = input_attachment_pos;
-        gbuffer_position_input_attachment_info.imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-        RHIDescriptorImageInfo gbuffer_normal_input_attachment_info = {};
-        gbuffer_normal_input_attachment_info.sampler =
-            m_rhi->getOrCreateDefaultSampler(Default_Sampler_Linear);
-        gbuffer_normal_input_attachment_info.imageView   = input_attachment_normal;
-        gbuffer_normal_input_attachment_info.imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-        RHIDescriptorImageInfo ssao_noise_image_info = {};
-        ssao_noise_image_info.sampler = m_rhi->getOrCreateDefaultSampler(Default_Sampler_Repeat);      // use repeat sampler
-        ssao_noise_image_info.imageView =
-            m_global_render_resource->_ssao_resource._ssao_noise_texture_image_view;
-        ssao_noise_image_info.imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        ssao_input_attachment_info.imageView   = input_attachment;
+        ssao_input_attachment_info.imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         RHIDescriptorBufferInfo ssao_kernel_buffer_info = {};
         ssao_kernel_buffer_info.offset = 0;
         ssao_kernel_buffer_info.range = sizeof(SSAOKernelObject);
         ssao_kernel_buffer_info.buffer = m_global_render_resource->_storage_buffer._ssao_kernel_storage_buffer;
 
-        RHIWriteDescriptorSet ssao_descriptor_writes_info[4];
+        RHIWriteDescriptorSet ssao_blur_descriptor_writes_info[2];
 
-        RHIWriteDescriptorSet& ssao_descriptor_pos_write_info = ssao_descriptor_writes_info[0];
-        ssao_descriptor_pos_write_info.sType           = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        ssao_descriptor_pos_write_info.pNext           = NULL;
-        ssao_descriptor_pos_write_info.dstSet          = m_descriptor_infos[0].descriptor_set;
-        ssao_descriptor_pos_write_info.dstBinding      = 0;
-        ssao_descriptor_pos_write_info.dstArrayElement = 0;
-        ssao_descriptor_pos_write_info.descriptorType  = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        ssao_descriptor_pos_write_info.descriptorCount = 1;
-        ssao_descriptor_pos_write_info.pImageInfo = &gbuffer_position_input_attachment_info;
+        RHIWriteDescriptorSet& ssao_blur_descriptor_ssao_write_info = ssao_blur_descriptor_writes_info[0];
+        ssao_blur_descriptor_ssao_write_info.sType           = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        ssao_blur_descriptor_ssao_write_info.pNext           = NULL;
+        ssao_blur_descriptor_ssao_write_info.dstSet          = m_descriptor_infos[0].descriptor_set;
+        ssao_blur_descriptor_ssao_write_info.dstBinding      = 0;
+        ssao_blur_descriptor_ssao_write_info.dstArrayElement = 0;
+        ssao_blur_descriptor_ssao_write_info.descriptorType  = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        ssao_blur_descriptor_ssao_write_info.descriptorCount = 1;
+        ssao_blur_descriptor_ssao_write_info.pImageInfo = &ssao_input_attachment_info;
 
-        RHIWriteDescriptorSet& ssao_descriptor_normal_write_info = ssao_descriptor_writes_info[1];
-        ssao_descriptor_normal_write_info.sType                 = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        ssao_descriptor_normal_write_info.pNext                 = NULL;
-        ssao_descriptor_normal_write_info.dstSet                = m_descriptor_infos[0].descriptor_set;
-        ssao_descriptor_normal_write_info.dstBinding            = 1;
-        ssao_descriptor_normal_write_info.dstArrayElement       = 0;
-        ssao_descriptor_normal_write_info.descriptorType        = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        ssao_descriptor_normal_write_info.descriptorCount       = 1;
-        ssao_descriptor_normal_write_info.pImageInfo            = &gbuffer_normal_input_attachment_info;
-
-        RHIWriteDescriptorSet& ssao_descriptor_noise_write_info = ssao_descriptor_writes_info[2];
-        ssao_descriptor_noise_write_info.sType                 = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        ssao_descriptor_noise_write_info.pNext                 = NULL;
-        ssao_descriptor_noise_write_info.dstSet                = m_descriptor_infos[0].descriptor_set;
-        ssao_descriptor_noise_write_info.dstBinding            = 2;
-        ssao_descriptor_noise_write_info.dstArrayElement       = 0;
-        ssao_descriptor_noise_write_info.descriptorType        = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        ssao_descriptor_noise_write_info.descriptorCount       = 1;
-        ssao_descriptor_noise_write_info.pImageInfo            = &ssao_noise_image_info;
-
-        RHIWriteDescriptorSet& ssao_descriptor_kernel_write_info = ssao_descriptor_writes_info[3];
+        RHIWriteDescriptorSet& ssao_descriptor_kernel_write_info = ssao_blur_descriptor_writes_info[1];
         ssao_descriptor_kernel_write_info.sType                 = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         ssao_descriptor_kernel_write_info.pNext                 = NULL;
         ssao_descriptor_kernel_write_info.dstSet                = m_descriptor_infos[0].descriptor_set;
-        ssao_descriptor_kernel_write_info.dstBinding            = 3;
+        ssao_descriptor_kernel_write_info.dstBinding            = 1;
         ssao_descriptor_kernel_write_info.dstArrayElement       = 0;
         ssao_descriptor_kernel_write_info.descriptorType        = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
         ssao_descriptor_kernel_write_info.descriptorCount       = 1;
         ssao_descriptor_kernel_write_info.pBufferInfo           = &ssao_kernel_buffer_info;
 
-        m_rhi->updateDescriptorSets(sizeof(ssao_descriptor_writes_info) /
-                                    sizeof(ssao_descriptor_writes_info[0]),
-                                    ssao_descriptor_writes_info,
+        m_rhi->updateDescriptorSets(sizeof(ssao_blur_descriptor_writes_info) /
+                                    sizeof(ssao_blur_descriptor_writes_info[0]),
+                                    ssao_blur_descriptor_writes_info,
                                     0,
                                     NULL);
     }
 
-    float lerp(float a, float b, float f)
-    {
-        return a + f * (b - a);
-    }
-
-    void SSAOPass::preparePassData(std::shared_ptr<RenderResourceBase> render_resource)
+    void SSAOBlurPass::preparePassData(std::shared_ptr<RenderResourceBase> render_resource)
     {
         const RenderResource* vulkan_resource = static_cast<const RenderResource*>(render_resource.get());
         if (vulkan_resource)
@@ -319,29 +269,11 @@ namespace Compass
         
     }
 
-    void SSAOPass::setupSSAOKernel(std::shared_ptr<RenderResourceBase> render_resource)
-    {
-        std::uniform_real_distribution<float> randomFloats(0.0, 1.0);
-        std::default_random_engine generator;
 
-        RenderResource* vulkan_resource = static_cast<RenderResource*>(render_resource.get());
-
-        for(int i = 0; i < 64; i++)
-        {
-            Vector3 sample(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, randomFloats(generator));
-            sample.normalise();
-            sample *= randomFloats(generator);
-            float scale = float(i) / 64.0f;
-            // lerp
-            scale = lerp(0.1f, 1.0f, scale * scale);
-            vulkan_resource->m_ssao_kernel_storage_buffer_object.ssao_kernel[i] = Vector4(sample * scale, 0.f);
-        }
-    }
-
-    void SSAOPass::draw()
+    void SSAOBlurPass::draw()
     {
         float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-        m_rhi->pushEvent(m_rhi->getCurrentCommandBuffer(), "SSAO", color);
+        m_rhi->pushEvent(m_rhi->getCurrentCommandBuffer(), "SSAO Blur", color);
 
         m_rhi->cmdBindPipelinePFN(m_rhi->getCurrentCommandBuffer(), RHI_PIPELINE_BIND_POINT_GRAPHICS, m_render_pipelines[0].pipeline);
         m_rhi->cmdSetViewportPFN(m_rhi->getCurrentCommandBuffer(), 0, 1, m_rhi->getSwapchainInfo().viewport);

@@ -24,6 +24,7 @@ struct PointLight
 layout(set = 0, binding = 0) readonly buffer _unused_name_perframe
 {
     mat4             proj_view_matrix;
+    mat4             view_matrix;
     vec3             camera_position;
     float            _padding_camera_position;
     vec3             ambient_light;
@@ -56,10 +57,14 @@ layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec3 in_tangent;
 layout(location = 3) in vec2 in_texcoord;
 
+// out in world space
 layout(location = 0) out vec3 out_world_position; // output in framebuffer 0 for fragment shader
 layout(location = 1) out vec3 out_normal;
 layout(location = 2) out vec3 out_tangent;
 layout(location = 3) out vec2 out_texcoord;
+// out in view space for ssao
+layout(location = 4) out vec3 outPos;
+layout(location = 5) out vec3 outNormal;
 
 void main()
 {
@@ -116,7 +121,8 @@ void main()
         model_tangent  = in_tangent;
     }
 
-    out_world_position = (model_matrix * vec4(model_position, 1.0)).xyz;
+    out_world_position = (model_matrix * vec4(model_position, 1.0)).xyz;    // todo use view position
+    outPos = (view_matrix * model_matrix * vec4(model_position, 1.0)).xyz;
 
     gl_Position = proj_view_matrix * vec4(out_world_position, 1.0f);
 
@@ -124,6 +130,9 @@ void main()
     mat3x3 tangent_matrix = mat3x3(model_matrix[0].xyz, model_matrix[1].xyz, model_matrix[2].xyz);
     out_normal            = normalize(tangent_matrix * model_normal);
     out_tangent           = normalize(tangent_matrix * model_tangent);
+
+    mat3 normalMatrix = transpose(inverse(mat3(view_matrix * model_matrix)));
+    outNormal = normalMatrix * model_normal;
 
     out_texcoord = in_texcoord;
 }

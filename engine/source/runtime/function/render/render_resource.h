@@ -70,6 +70,21 @@ namespace Compass
         RHIFormat _color_grading_LUT_texture_image_format;
     };
 
+    struct SSAONoiseResource
+    {
+        RHIImage* _ssao_noise_texture_image;
+        RHIImageView* _ssao_noise_texture_image_view;
+        VmaAllocation _ssao_noise_texture_image_allocation;
+    };
+
+    struct SSAONoiseResourceData
+    {
+        void* _ssao_texture_image_pixels;
+        uint32_t           _ssao_texture_image_width;
+        uint32_t           _ssao_texture_image_height;
+        RHIFormat _ssao_texture_image_format;
+    };
+
     struct StorageBuffer
     {
         // limits
@@ -92,11 +107,17 @@ namespace Compass
         RHIBuffer* _axis_inefficient_storage_buffer;
         RHIDeviceMemory* _axis_inefficient_storage_buffer_memory;
         void* _axis_inefficient_storage_buffer_memory_pointer;
+
+        // ssao kernel
+        RHIBuffer* _ssao_kernel_storage_buffer;
+        RHIDeviceMemory* _ssao_kernel_storage_buffer_memory;
+        void* _ssao_kernel_storage_buffer_memory_pointer;
     };
 
     struct GlobalRenderResource
     {
         IBLResource          _ibl_resource;
+        SSAONoiseResource    _ssao_resource;
         ColorGradingResource _color_grading_resource;
         StorageBuffer        _storage_buffer;
     };
@@ -143,6 +164,7 @@ namespace Compass
         MeshInefficientPickPerframeStorageBufferObject m_mesh_inefficient_pick_perframe_storage_buffer_object;
         ParticleBillboardPerframeStorageBufferObject   m_particlebillboard_perframe_storage_buffer_object;
         ParticleCollisionPerframeStorageBufferObject   m_particle_collision_perframe_storage_buffer_object;
+        SSAOKernelObject                               m_ssao_kernel_storage_buffer_object;
 
         // cached mesh and material
         std::map<size_t, VulkanMesh>        m_vulkan_meshes;

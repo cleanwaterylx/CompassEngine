@@ -11,6 +11,7 @@
 #include "runtime/core/base/macro.h"
 
 #include <stdexcept>
+#include <random>
 
 namespace Compass
 {
@@ -85,6 +86,37 @@ namespace Compass
             color_grading_map->m_height,
             color_grading_map->m_pixels,
             color_grading_map->m_format);
+
+        // create ssao noise
+        std::uniform_real_distribution<float> randomFloats(0.0, 1.0); 
+        std::default_random_engine generator;
+        Vector4 ssaoNoise[16];
+        for (unsigned int i = 0; i < 16; i++)
+        {
+            Vector4 noise(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, 0.0f, 0.0f); // rotate around z-axis (in tangent space)
+            ssaoNoise[i] = noise;
+        }
+
+        TextureData* ssao_noise = new TextureData;
+        ssao_noise->m_pixels = &ssaoNoise[0];
+        ssao_noise->m_width = 4;
+        ssao_noise->m_height = 4;
+        ssao_noise->m_format = RHIFormat::RHI_FORMAT_R32G32B32A32_SFLOAT;
+        ssao_noise->m_depth        = 1;
+        ssao_noise->m_array_layers = 1;
+        ssao_noise->m_mip_levels   = 1;
+        ssao_noise->m_type         = PICCOLO_IMAGE_TYPE::PICCOLO_IMAGE_TYPE_2D;
+
+        rhi->createGlobalImage(
+            m_global_render_resource._ssao_resource._ssao_noise_texture_image,
+            m_global_render_resource._ssao_resource._ssao_noise_texture_image_view,
+            m_global_render_resource._ssao_resource._ssao_noise_texture_image_allocation,
+            ssao_noise->m_width,
+            ssao_noise->m_height,
+            ssao_noise->m_pixels,
+            ssao_noise->m_format
+        );
+        
     }
 
     void RenderResource::uploadGameObjectRenderResource(std::shared_ptr<RHI> rhi,
@@ -129,10 +161,13 @@ namespace Compass
 
         // set storage_buffer data
         m_mesh_perframe_storage_buffer_object.proj_view_matrix = proj_view_matrix;
+        m_mesh_perframe_storage_buffer_object.view_matrix = view_matrix;
         m_mesh_perframe_storage_buffer_object.camera_position = camera_position;
         m_mesh_perframe_storage_buffer_object.ambient_light = ambient_light;
         m_mesh_perframe_storage_buffer_object.point_light_num = point_light_num;
 
+        m_ssao_kernel_storage_buffer_object.proj_mat = proj_matrix;
+        m_ssao_kernel_storage_buffer_object.view_mat = view_matrix;
 
         m_mesh_point_light_shadow_perframe_storage_buffer_object.point_light_num = point_light_num;
         // point lights
@@ -1177,6 +1212,13 @@ namespace Compass
                           _storage_buffer._axis_inefficient_storage_buffer,
                           _storage_buffer._axis_inefficient_storage_buffer_memory);
 
+        // ssao kernel buffer
+        rhi->createBuffer(sizeof(SSAOKernelObject),
+                          RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                          RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                          _storage_buffer._ssao_kernel_storage_buffer,
+                          _storage_buffer._ssao_kernel_storage_buffer_memory);
+
         // null descriptor
         rhi->createBuffer(64,
                           RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT,
@@ -1196,6 +1238,12 @@ namespace Compass
                        RHI_WHOLE_SIZE,
                        0,
                        &_storage_buffer._axis_inefficient_storage_buffer_memory_pointer);
+
+        rhi->mapMemory(_storage_buffer._ssao_kernel_storage_buffer_memory,
+                       0,
+                       RHI_WHOLE_SIZE,
+                       0,
+                       &_storage_buffer._ssao_kernel_storage_buffer_memory_pointer);
 
         static_assert(64 >= sizeof(MeshVertex::VulkanMeshVertexJointBinding), "");
     }

@@ -2624,16 +2624,15 @@ namespace Compass
         // Since DescriptorSet should be treated as asset in Vulkan, DescriptorPool
         // should be big enough, and thus we can sub-allocate DescriptorSet from
         // DescriptorPool merely as we sub-allocate Buffer/Image from DeviceMemory.
-
         VkDescriptorPoolSize pool_sizes[7];
         pool_sizes[0].type            = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
         pool_sizes[0].descriptorCount = 3 + 2 + 2 + 2 + 1 + 1 + 3 + 3;
         pool_sizes[1].type            = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-        pool_sizes[1].descriptorCount = 1 + 1 + 1 * m_max_vertex_blending_mesh_count;
+        pool_sizes[1].descriptorCount = 1 + 1 + 1 * m_max_vertex_blending_mesh_count + 2;
         pool_sizes[2].type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         pool_sizes[2].descriptorCount = 1 * m_max_material_count;
         pool_sizes[3].type            = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        pool_sizes[3].descriptorCount = 3 + 5 * m_max_material_count + 1 + 1; // ImGui_ImplVulkan_CreateDeviceObjects
+        pool_sizes[3].descriptorCount = 3 + 5 * m_max_material_count + 1 + 1 + 3; // ImGui_ImplVulkan_CreateDeviceObjects
         pool_sizes[4].type            = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
         pool_sizes[4].descriptorCount = 4 + 1 + 1 + 2;
         pool_sizes[5].type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
@@ -2732,6 +2731,14 @@ namespace Compass
                 ((VulkanSampler*)m_nearest_sampler)->setResource(VulkanUtil::getOrCreateNearestSampler(m_physical_device, m_device));
             }
             return m_nearest_sampler;
+            break;
+        case Compass::Default_Sampler_Repeat:
+            if (m_repeat_sampler == nullptr)
+            {
+                m_repeat_sampler = new VulkanSampler();
+                ((VulkanSampler*)m_repeat_sampler)->setResource(VulkanUtil::getOrCreateRepeatSampler(m_physical_device, m_device));
+            }
+            return m_repeat_sampler;
             break;
 
         default:

@@ -73,6 +73,7 @@ namespace Compass
             global_rendering_res.m_directional_light.m_direction.normalisedCopy();
         m_render_scene->m_directional_light.m_color = global_rendering_res.m_directional_light.m_color.toVector3();
         m_render_scene->setVisibleNodesReference();
+        // todo point light ÐÞ¸Ärender.global.json
 
         // initialize render pipeline
         RenderPipelineInitInfo pipeline_init_info;

@@ -1604,7 +1604,8 @@ namespace Compass
     enum RHIDefaultSamplerType
     {
         Default_Sampler_Linear,
-        Default_Sampler_Nearest
+        Default_Sampler_Nearest,
+        Default_Sampler_Repeat
     };
 
     enum RHIDependencyFlagBits {

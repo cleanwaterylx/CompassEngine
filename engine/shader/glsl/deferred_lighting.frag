@@ -24,6 +24,7 @@ struct PointLight
 layout(set = 0, binding = 0) readonly buffer _mesh_per_frame
 {
     highp mat4       proj_view_matrix;
+    highp mat4       view_matrix;
     highp vec3       camera_position;
     lowp float       _padding_camera_position;
     highp vec3       ambient_light;
@@ -47,6 +48,7 @@ layout(input_attachment_index = 0, set = 1, binding = 0) uniform highp subpassIn
 layout(input_attachment_index = 1, set = 1, binding = 1) uniform highp subpassInput in_gbuffer_b;
 layout(input_attachment_index = 2, set = 1, binding = 2) uniform highp subpassInput in_gbuffer_c;
 layout(input_attachment_index = 3, set = 1, binding = 3) uniform highp subpassInput in_scene_depth;
+layout(input_attachment_index = 4, set = 1, binding = 4) uniform highp subpassInput in_ssao_blur;
 
 layout(set = 2, binding = 1) uniform samplerCube skybox_sampler;
 
