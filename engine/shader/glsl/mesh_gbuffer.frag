@@ -28,11 +28,16 @@ layout(location = 0) in highp vec3 in_world_position;
 layout(location = 1) in highp vec3 in_normal;
 layout(location = 2) in highp vec3 in_tangent;
 layout(location = 3) in highp vec2 in_texcoord;
+// input in view space for ssao
+layout(location = 4) in highp vec3 inPos;
+layout(location = 5) in highp vec3 inNormal;
 
 // output screen color to location 0
 layout(location = 0) out highp vec4 out_gbuffer_a;
 layout(location = 1) out highp vec4 out_gbuffer_b;
 layout(location = 2) out highp vec4 out_gbuffer_c;
+layout(location = 3) out highp vec4 out_gbuffer_pos;
+layout(location = 4) out highp vec4 out_gbuffer_normal;
 // layout(location = 3) out highp vec4 out_scene_color;
 
 highp vec3 getBasecolor()
@@ -53,6 +58,12 @@ highp vec3 calculateNormal()
     return normalize(TBN * tangent_normal);
 }
 
+highp float linearDepth(highp float depth)
+{
+	highp float z = depth * 2.0f - 1.0f; 
+	return (2.0f * NEAR_PLANE * FAR_PLANE) / (FAR_PLANE + NEAR_PLANE - z * (FAR_PLANE - NEAR_PLANE));	
+}
+
 void main()
 {
     PGBufferData gbuffer;
@@ -66,6 +77,9 @@ void main()
     highp vec3 Le = texture(emissive_color_texture_sampler, in_texcoord).xyz * emissiveFactor;
 
     EncodeGBufferData(gbuffer, out_gbuffer_a, out_gbuffer_b, out_gbuffer_c);
+
+    out_gbuffer_pos = vec4(inPos, linearDepth(gl_FragCoord.z));
+    out_gbuffer_normal = vec4(normalize(inNormal), 1.0);
 
     // out_scene_color.rgba = vec4(Le, 1.0);
 }

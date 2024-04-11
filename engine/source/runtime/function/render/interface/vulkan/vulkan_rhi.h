@@ -257,6 +257,7 @@ namespace Compass
         // default sampler cache
         RHISampler* m_linear_sampler = nullptr;
         RHISampler* m_nearest_sampler = nullptr;
+        RHISampler* m_repeat_sampler = nullptr;
         std::map<uint32_t, RHISampler*> m_mipmap_sampler_map;
 
     private:

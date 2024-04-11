@@ -42,6 +42,8 @@ namespace Compass
         std::shared_ptr<RenderPassBase> m_directional_light_pass;
         std::shared_ptr<RenderPassBase> m_point_light_shadow_pass;
         std::shared_ptr<RenderPassBase> m_main_camera_pass;
+        std::shared_ptr<RenderPassBase> m_ssao_pass;
+        std::shared_ptr<RenderPassBase> m_ssao_blur_pass;
         std::shared_ptr<RenderPassBase> m_color_grading_pass;
         std::shared_ptr<RenderPassBase> m_fxaa_pass;
         std::shared_ptr<RenderPassBase> m_tone_mapping_pass;

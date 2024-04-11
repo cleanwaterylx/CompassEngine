@@ -23,6 +23,7 @@ struct PointLight
 layout(set = 0, binding = 0) readonly buffer _unused_name_perframe
 {
     highp mat4       proj_view_matrix;
+    highp mat4       view_matrix;
     highp vec3       camera_position;
     lowp float       _padding_camera_position;
     highp vec3       ambient_light;

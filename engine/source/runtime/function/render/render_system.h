@@ -66,7 +66,7 @@ namespace Compass
         void clearForLevelReloading();
 
     private:
-        RENDER_PIPELINE_TYPE m_render_pipeline_type {RENDER_PIPELINE_TYPE::FORWARD_PIPELINE};
+        RENDER_PIPELINE_TYPE m_render_pipeline_type {RENDER_PIPELINE_TYPE::DEFERRED_PIPELINE};   // ‰÷»æ∑Ω Ω
 
         RenderSwapContext m_swap_context;
 

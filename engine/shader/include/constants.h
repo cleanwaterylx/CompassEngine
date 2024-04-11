@@ -3,5 +3,9 @@
 #define m_mesh_per_drawcall_max_instance_count 64
 #define m_mesh_vertex_blending_max_joint_count 1024
 #define CHAOS_LAYOUT_MAJOR row_major
+#define NEAR_PLANE 0.1f // 投影矩阵的近平面
+#define FAR_PLANE 1000.0f // 投影矩阵的远平面 
+#define ssao_kernel_size 64
+#define ssao_radius 0.2f
 layout(CHAOS_LAYOUT_MAJOR) buffer;
 layout(CHAOS_LAYOUT_MAJOR) uniform;
