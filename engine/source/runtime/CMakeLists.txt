@@ -48,6 +48,7 @@ target_link_libraries(${TARGET_NAME} PRIVATE tinyobjloader stb)
 target_link_libraries(${TARGET_NAME} PUBLIC glfw)
 target_link_libraries(${TARGET_NAME} PUBLIC imgui)
 target_link_libraries(${TARGET_NAME} PUBLIC Jolt)
+target_link_libraries(${TARGET_NAME} PUBLIC lua_static sol2)
 target_link_libraries(${TARGET_NAME} PUBLIC ${vulkan_lib})
 
 
