@@ -17,6 +17,12 @@ namespace Compass
 
         void tick(float delta_time) override;
 
+        template<typename T>
+        static void set(std::weak_ptr<GObject> game_object, const char* name, T value);
+
+        template<typename T>
+        static std::optional<T> get(std::weak_ptr<GObject> game_object, const char* name);
+
     protected:
         sol::state m_lua_state;
 

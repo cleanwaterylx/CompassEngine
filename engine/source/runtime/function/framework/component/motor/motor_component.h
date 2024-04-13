@@ -64,6 +64,7 @@ namespace Compass
         ControllerType m_controller_type {ControllerType::none};
         Controller*    m_controller {nullptr};
 
+        META(Enable)
         bool m_is_moving {false};
     };
 } // namespace Compass
