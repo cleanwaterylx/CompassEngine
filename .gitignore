@@ -433,3 +433,6 @@ FodyWeavers.xsd
 
 # sourcetrail
 strail/
+
+# imgui
+imgui.ini

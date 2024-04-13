@@ -99,7 +99,7 @@ void main()
 
     highp vec3 result_color;
 
-#include "mesh_lighting.inl"
+// #include "mesh_lighting.inl"
 
     out_scene_color = vec4(result_color, 1.0);
 }
