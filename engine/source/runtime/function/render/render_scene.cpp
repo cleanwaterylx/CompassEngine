@@ -139,7 +139,7 @@ namespace Compass
         for (size_t i = 0; i < point_light_num; i++)
         {
             point_lights_bounding_spheres[i].m_center = m_point_light_list.m_lights[i].m_position;
-            point_lights_bounding_spheres[i].m_radius = m_point_light_list.m_lights[i].calculateRadius();
+            point_lights_bounding_spheres[i].m_radius = m_point_light_list.m_lights[i].m_radius;
         }
 
         for (const RenderEntity& entity : m_render_entities)

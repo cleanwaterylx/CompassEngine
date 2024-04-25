@@ -46,6 +46,17 @@ namespace Compass
         Color   m_color;
     };
 
+    REFLECTION_TYPE(PointLight)
+    CLASS(PointLight, Fields)
+    {
+        REFLECTION_BODY(PointLight);
+
+    public:
+        Vector3 m_position;
+        float   m_radius;
+        float   m_intensity;
+    };
+
     REFLECTION_TYPE(GlobalRenderingRes)
     CLASS(GlobalRenderingRes, Fields)
     {

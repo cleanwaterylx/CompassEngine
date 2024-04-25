@@ -36,6 +36,35 @@
       "definition": "asset/objects/environment/particle/particle.object.json"
     },
     {
+      "name": "Light",
+      "instanced_components": [
+        {
+          "$typeName": "TransformComponent",
+          "$context": {
+            "transform": {
+              "position": {
+                "x": 3,
+                "y": 3,
+                "z": 3
+              },
+              "rotation": {
+                "w": 0.7,
+                "x": 0,
+                "y": 0,
+                "z": 0.7
+              },
+              "scale": {
+                "x": 0.5,
+                "y": 0.5,
+                "z": 0.5
+              }
+            }
+          }
+        }
+      ],
+      "definition": "asset/objects/environment/light/light.object.json"
+    },
+    {
       "name": "Player",
       "instanced_components": [
         {

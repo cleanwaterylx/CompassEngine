@@ -21,6 +21,7 @@ namespace Compass
     {
         registerEditorTickComponent("TransformComponent");
         registerEditorTickComponent("MeshComponent");
+        registerEditorTickComponent("LightComponent");          // register light component
     }
 
     CompassEditor::~CompassEditor() {}

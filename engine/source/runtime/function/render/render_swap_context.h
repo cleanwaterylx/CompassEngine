@@ -33,6 +33,11 @@ namespace Compass
         LevelColorGradingResourceDesc m_color_grading_resource_desc;
     };
 
+    struct LightSwapData
+    {
+        std::vector<PointLight> m_point_lights;
+    };
+
     struct CameraSwapData
     {
         std::optional<float>            m_fov_x;
@@ -90,6 +95,7 @@ namespace Compass
         std::optional<ParticleSubmitRequest>   m_particle_submit_request;
         std::optional<EmitterTickRequest>      m_emitter_tick_request;
         std::optional<EmitterTransformRequest> m_emitter_transform_request;
+        std::optional<LightSwapData>           m_light_swap_data;
 
         void addDirtyGameObject(GameObjectDesc&& desc);
         void addDeleteGameObject(GameObjectDesc&& desc);
@@ -119,6 +125,7 @@ namespace Compass
         void            resetParticleBatchSwapData();
         void            resetEmitterTickSwapData();
         void            resetEmitterTransformSwapData();
+        void            resetLightSwapData();
 
     private:
         uint8_t        m_logic_swap_data_index {LogicSwapDataType};

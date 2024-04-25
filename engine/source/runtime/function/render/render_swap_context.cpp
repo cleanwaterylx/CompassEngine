@@ -86,6 +86,11 @@ namespace Compass
         m_swap_data[m_render_swap_data_index].m_emitter_transform_request.reset();
     }
 
+    void RenderSwapContext::resetLightSwapData()
+    {
+        m_swap_data[m_render_swap_data_index].m_light_swap_data.reset();
+    }
+
     void RenderSwapContext::swap()
     {
         resetLevelResourceSwapData();
@@ -95,6 +100,7 @@ namespace Compass
         resetEmitterTickSwapData();
         resetEmitterTransformSwapData();
         resetParticleBatchSwapData();
+        resetLightSwapData();
         std::swap(m_logic_swap_data_index, m_render_swap_data_index);
     }
 

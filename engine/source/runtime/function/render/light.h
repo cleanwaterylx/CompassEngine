@@ -3,12 +3,13 @@
 #include "runtime/core/math/vector3.h"
 
 #include "runtime/function/render/render_type.h"
+#include "runtime/resource/res_type/global/global_rendering.h"
 
 #include <vector>
 
 namespace Compass
 {
-    struct PointLight
+    struct PPointLight
     {
         Vector3 m_position;
         // radiant flux in W

@@ -73,7 +73,8 @@ namespace Compass
             global_rendering_res.m_directional_light.m_direction.normalisedCopy();
         m_render_scene->m_directional_light.m_color = global_rendering_res.m_directional_light.m_color.toVector3();
         m_render_scene->setVisibleNodesReference();
-        // todo point light 修改render.global.json
+        // todo point light 修改render.global.json       
+        // todo 方向光 变化
 
         // initialize render pipeline
         RenderPipelineInitInfo pipeline_init_info;
@@ -259,6 +260,10 @@ namespace Compass
         std::shared_ptr<AssetManager> asset_manager = g_runtime_global_context.m_asset_manager;
         ASSERT(asset_manager);
 
+        // todo dir light
+        // update point lights
+        m_render_scene->m_point_light_list.m_lights = swap_data.m_light_swap_data->m_point_lights;
+
         // TODO: update global resources if needed
         if (swap_data.m_level_resource_desc.has_value())
         {
@@ -286,6 +291,7 @@ namespace Compass
                     render_entity.m_instance_id =
                         static_cast<uint32_t>(m_render_scene->getInstanceIdAllocator().allocGuid(part_id));
                     render_entity.m_model_matrix = game_object_part.m_transform_desc.m_transform_matrix;
+                    // todo lightDesc
 
                     m_render_scene->addInstanceIdToMap(render_entity.m_instance_id, gobject.getId());
 

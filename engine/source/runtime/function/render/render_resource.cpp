@@ -174,10 +174,11 @@ namespace Compass
         for (uint32_t i = 0; i < point_light_num; i++)
         {
             Vector3 point_light_position = render_scene->m_point_light_list.m_lights[i].m_position;
-            Vector3 point_light_intensity =
-                render_scene->m_point_light_list.m_lights[i].m_flux / (4.0f * Math_PI);
+            float intensity = render_scene->m_point_light_list.m_lights[i].m_intensity;
+            Vector3 point_light_intensity = Vector3(intensity, intensity, intensity);
+                // render_scene->m_point_light_list.m_lights[i].m_flux / (4.0f * Math_PI);    todo fix it flux or intensity
 
-            float radius = render_scene->m_point_light_list.m_lights[i].calculateRadius();
+            float radius = render_scene->m_point_light_list.m_lights[i].m_radius;
 
             m_mesh_perframe_storage_buffer_object.scene_point_lights[i].position  = point_light_position;
             m_mesh_perframe_storage_buffer_object.scene_point_lights[i].radius    = radius;
