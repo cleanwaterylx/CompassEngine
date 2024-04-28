@@ -424,6 +424,22 @@ namespace Compass
         forward_lighting_pass.preserveAttachmentCount = 0;
         forward_lighting_pass.pPreserveAttachments    = NULL;
 
+        // light cube pass description
+        RHIAttachmentReference light_cube_pass_color_attachments_reference[1] = {};
+        light_cube_pass_color_attachments_reference[0].attachment = &backup_odd_color_attachment_description - attachments;
+        light_cube_pass_color_attachments_reference[0].layout = RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        RHISubpassDescription& light_cube_pass = subpasses[_main_camera_subpass_light_cube];
+        light_cube_pass.pipelineBindPoint     = RHI_PIPELINE_BIND_POINT_GRAPHICS;
+        light_cube_pass.inputAttachmentCount  = 0U;
+        light_cube_pass.pInputAttachments     = NULL;
+        light_cube_pass.colorAttachmentCount  = sizeof(light_cube_pass_color_attachments_reference) /
+                                                     sizeof(light_cube_pass_color_attachments_reference[0]);
+        light_cube_pass.pColorAttachments       = &light_cube_pass_color_attachments_reference[0];
+        light_cube_pass.pDepthStencilAttachment = NULL;
+        light_cube_pass.preserveAttachmentCount = 0;
+        light_cube_pass.pPreserveAttachments    = NULL;
+
         RHIAttachmentReference tone_mapping_pass_input_attachment_reference {};
         tone_mapping_pass_input_attachment_reference.attachment =
             &backup_odd_color_attachment_description - attachments;
@@ -538,7 +554,7 @@ namespace Compass
         combine_ui_pass.pPreserveAttachments    = NULL;
 
         // 通过VkSubpassDependency来描述RenderPass中不同SubPass之间或同一个SubPass的内存和执行同步依赖
-        RHISubpassDependency dependencies[11] = {};
+        RHISubpassDependency dependencies[12] = {};
 
         RHISubpassDependency& deferred_lighting_pass_depend_on_shadow_map_pass = dependencies[0];
         deferred_lighting_pass_depend_on_shadow_map_pass.srcSubpass           = RHI_SUBPASS_EXTERNAL;
@@ -614,20 +630,33 @@ namespace Compass
             RHI_ACCESS_SHADER_READ_BIT | RHI_ACCESS_COLOR_ATTACHMENT_READ_BIT;
         forward_lighting_pass_depend_on_deferred_lighting_pass.dependencyFlags = RHI_DEPENDENCY_BY_REGION_BIT;
 
-        RHISubpassDependency& tone_mapping_pass_depend_on_lighting_pass = dependencies[6];
-        tone_mapping_pass_depend_on_lighting_pass.srcSubpass           = _main_camera_subpass_forward_lighting;
-        tone_mapping_pass_depend_on_lighting_pass.dstSubpass           = _main_camera_subpass_tone_mapping;
-        tone_mapping_pass_depend_on_lighting_pass.srcStageMask =
+        RHISubpassDependency& light_cube_pass_depend_on_forward_lighting_pass = dependencies[6];
+        light_cube_pass_depend_on_forward_lighting_pass.srcSubpass = _main_camera_subpass_forward_lighting;
+        light_cube_pass_depend_on_forward_lighting_pass.dstSubpass = _main_camera_subpass_light_cube;
+        light_cube_pass_depend_on_forward_lighting_pass.srcStageMask =
             RHI_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | RHI_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        tone_mapping_pass_depend_on_lighting_pass.dstStageMask =
+        light_cube_pass_depend_on_forward_lighting_pass.dstStageMask =
             RHI_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | RHI_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        tone_mapping_pass_depend_on_lighting_pass.srcAccessMask =
+        light_cube_pass_depend_on_forward_lighting_pass.srcAccessMask =
             RHI_ACCESS_SHADER_WRITE_BIT | RHI_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        tone_mapping_pass_depend_on_lighting_pass.dstAccessMask =
+        light_cube_pass_depend_on_forward_lighting_pass.dstAccessMask =
             RHI_ACCESS_SHADER_READ_BIT | RHI_ACCESS_COLOR_ATTACHMENT_READ_BIT;
-        tone_mapping_pass_depend_on_lighting_pass.dependencyFlags = RHI_DEPENDENCY_BY_REGION_BIT;
+        light_cube_pass_depend_on_forward_lighting_pass.dependencyFlags = RHI_DEPENDENCY_BY_REGION_BIT;
 
-        RHISubpassDependency& color_grading_pass_depend_on_tone_mapping_pass = dependencies[7];
+        RHISubpassDependency& tone_mapping_pass_depend_on_light_cube_pass = dependencies[7];
+        tone_mapping_pass_depend_on_light_cube_pass.srcSubpass           = _main_camera_subpass_light_cube;
+        tone_mapping_pass_depend_on_light_cube_pass.dstSubpass           = _main_camera_subpass_tone_mapping;
+        tone_mapping_pass_depend_on_light_cube_pass.srcStageMask =
+            RHI_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | RHI_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        tone_mapping_pass_depend_on_light_cube_pass.dstStageMask =
+            RHI_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | RHI_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        tone_mapping_pass_depend_on_light_cube_pass.srcAccessMask =
+            RHI_ACCESS_SHADER_WRITE_BIT | RHI_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        tone_mapping_pass_depend_on_light_cube_pass.dstAccessMask =
+            RHI_ACCESS_SHADER_READ_BIT | RHI_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+        tone_mapping_pass_depend_on_light_cube_pass.dependencyFlags = RHI_DEPENDENCY_BY_REGION_BIT;
+
+        RHISubpassDependency& color_grading_pass_depend_on_tone_mapping_pass = dependencies[8];
         color_grading_pass_depend_on_tone_mapping_pass.srcSubpass           = _main_camera_subpass_tone_mapping;
         color_grading_pass_depend_on_tone_mapping_pass.dstSubpass           = _main_camera_subpass_color_grading;
         color_grading_pass_depend_on_tone_mapping_pass.srcStageMask =
@@ -640,7 +669,7 @@ namespace Compass
             RHI_ACCESS_SHADER_READ_BIT | RHI_ACCESS_COLOR_ATTACHMENT_READ_BIT;
         color_grading_pass_depend_on_tone_mapping_pass.dependencyFlags = RHI_DEPENDENCY_BY_REGION_BIT;
 
-        RHISubpassDependency& fxaa_pass_depend_on_color_grading_pass = dependencies[8];
+        RHISubpassDependency& fxaa_pass_depend_on_color_grading_pass = dependencies[9];
         fxaa_pass_depend_on_color_grading_pass.srcSubpass           = _main_camera_subpass_color_grading;
         fxaa_pass_depend_on_color_grading_pass.dstSubpass           = _main_camera_subpass_fxaa;
         fxaa_pass_depend_on_color_grading_pass.srcStageMask =
@@ -652,7 +681,7 @@ namespace Compass
         fxaa_pass_depend_on_color_grading_pass.dstAccessMask =
             RHI_ACCESS_SHADER_READ_BIT | RHI_ACCESS_COLOR_ATTACHMENT_READ_BIT;
 
-        RHISubpassDependency& ui_pass_depend_on_fxaa_pass = dependencies[9];
+        RHISubpassDependency& ui_pass_depend_on_fxaa_pass = dependencies[10];
         ui_pass_depend_on_fxaa_pass.srcSubpass           = _main_camera_subpass_fxaa;
         ui_pass_depend_on_fxaa_pass.dstSubpass           = _main_camera_subpass_ui;
         ui_pass_depend_on_fxaa_pass.srcStageMask =
@@ -663,7 +692,7 @@ namespace Compass
         ui_pass_depend_on_fxaa_pass.dstAccessMask   = RHI_ACCESS_SHADER_READ_BIT | RHI_ACCESS_COLOR_ATTACHMENT_READ_BIT;
         ui_pass_depend_on_fxaa_pass.dependencyFlags = RHI_DEPENDENCY_BY_REGION_BIT;
 
-        RHISubpassDependency& combine_ui_pass_depend_on_ui_pass = dependencies[10];
+        RHISubpassDependency& combine_ui_pass_depend_on_ui_pass = dependencies[11];
         combine_ui_pass_depend_on_ui_pass.srcSubpass           = _main_camera_subpass_ui;
         combine_ui_pass_depend_on_ui_pass.dstSubpass           = _main_camera_subpass_combine_ui;
         combine_ui_pass_depend_on_ui_pass.srcStageMask =
@@ -2118,6 +2147,7 @@ namespace Compass
                               ParticlePass&     particle_pass,
                               SSAOPass&         ssao_pass,
                               SSAOBlurPass&     ssao_blur_pass,
+                              LightCubePass&    light_cube_pass,
                               uint32_t          current_swapchain_image_index)
     {
         {
@@ -2186,6 +2216,15 @@ namespace Compass
         m_rhi->pushEvent(m_rhi->getCurrentCommandBuffer(), "Forward Lighting", color);
 
         particle_pass.draw();
+
+        m_rhi->popEvent(m_rhi->getCurrentCommandBuffer());
+
+        m_rhi->cmdNextSubpassPFN(m_rhi->getCurrentCommandBuffer(), RHI_SUBPASS_CONTENTS_INLINE);
+
+        // light cube pass
+        m_rhi->pushEvent(m_rhi->getCurrentCommandBuffer(), "Light Cube", color);
+
+        light_cube_pass.draw();
 
         m_rhi->popEvent(m_rhi->getCurrentCommandBuffer());
 

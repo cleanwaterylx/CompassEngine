@@ -42,6 +42,7 @@ namespace Compass
         _main_camera_subpass_ssao_blur,
         _main_camera_subpass_deferred_lighting,
         _main_camera_subpass_forward_lighting,
+        _main_camera_subpass_light_cube,
         _main_camera_subpass_tone_mapping,
         _main_camera_subpass_color_grading,
         _main_camera_subpass_fxaa,

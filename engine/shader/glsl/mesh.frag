@@ -66,6 +66,8 @@ layout(location = 0) in highp vec3 in_world_position;
 layout(location = 1) in highp vec3 in_normal;
 layout(location = 2) in highp vec3 in_tangent;
 layout(location = 3) in highp vec2 in_texcoord;
+layout(location = 4) in highp vec3 inPos;
+layout(location = 5) in highp vec3 inNormal;
 
 layout(location = 0) out highp vec4 out_scene_color;
 

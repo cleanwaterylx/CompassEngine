@@ -10,6 +10,7 @@
 #include "runtime/function/render/passes/particle_pass.h"
 #include "runtime/function/render/passes/ssao_pass.h"
 #include "runtime/function/render/passes/ssao_blur_pass.h"
+#include "runtime/function/render/passes/light_cube_pass.h"
 
 namespace Compass
 {
@@ -69,6 +70,7 @@ namespace Compass
             ParticlePass& particle_pass,
             SSAOPass& ssao_pass,
             SSAOBlurPass& ssao_blur_pass,
+            LightCubePass& light_cube_pass,
             uint32_t          current_swapchain_image_index);
 
         void drawForward(ColorGradingPass& color_grading_pass,

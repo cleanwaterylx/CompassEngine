@@ -14,6 +14,7 @@ namespace Compass
         m_directional_light_pass->preparePassData(render_resource);
         m_point_light_shadow_pass->preparePassData(render_resource);
         m_particle_pass->preparePassData(render_resource);
+        m_light_cube_pass->preparePassData(render_resource);
         g_runtime_global_context.m_debugdraw_manager->preparePassData(render_resource);
     }
     void RenderPipelineBase::forwardRender(std::shared_ptr<RHI>                rhi,

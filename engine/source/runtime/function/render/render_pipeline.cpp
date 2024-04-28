@@ -12,6 +12,7 @@
 #include "runtime/function/render/passes/tone_mapping_pass.h"
 #include "runtime/function/render/passes/ui_pass.h"
 #include "runtime/function/render/passes/particle_pass.h"
+#include "runtime/function/render/passes/light_cube_pass.h"
 
 #include "runtime/function/render/debugdraw/debug_draw_manager.h"
 
@@ -33,6 +34,7 @@ namespace Compass
         m_pick_pass               = std::make_shared<PickPass>();
         m_fxaa_pass               = std::make_shared<FXAAPass>();
         m_particle_pass           = std::make_shared<ParticlePass>();
+        m_light_cube_pass         = std::make_shared<LightCubePass>();
 
         RenderPassCommonInfo pass_common_info;
         pass_common_info.rhi             = m_rhi;
@@ -50,6 +52,7 @@ namespace Compass
         m_pick_pass->setCommonInfo(pass_common_info);
         m_fxaa_pass->setCommonInfo(pass_common_info);
         m_particle_pass->setCommonInfo(pass_common_info);
+        m_light_cube_pass->setCommonInfo(pass_common_info);
 
         m_point_light_shadow_pass->initialize(nullptr);
         m_directional_light_pass->initialize(nullptr);
@@ -95,6 +98,11 @@ namespace Compass
         ssao_blur_init_info.render_pass = _main_camera_pass->getRenderPass();
         ssao_blur_init_info.input_attachment = _main_camera_pass->getFramebufferImageViews()[_main_camera_pass_ssao];
         m_ssao_blur_pass->initialize(&ssao_blur_init_info);
+
+        // light cube pass init
+        LightCubePassInitInfo light_cube_init_info;
+        light_cube_init_info.render_pass = _main_camera_pass->getRenderPass();
+        m_light_cube_pass->initialize(&light_cube_init_info);
 
         ToneMappingPassInitInfo tone_mapping_init_info;
         tone_mapping_init_info.render_pass = _main_camera_pass->getRenderPass();
@@ -212,6 +220,7 @@ namespace Compass
         ParticlePass&     particle_pass      = *(static_cast<ParticlePass*>(m_particle_pass.get()));
         SSAOPass&         ssao_pass          = *(static_cast<SSAOPass*>(m_ssao_pass.get()));
         SSAOBlurPass&     ssao_blur_pass     = *(static_cast<SSAOBlurPass*>(m_ssao_blur_pass.get()));
+        LightCubePass&    light_cube_pass    = *(static_cast<LightCubePass*>(m_light_cube_pass.get()));
 
         static_cast<ParticlePass*>(m_particle_pass.get())
             ->setRenderCommandBufferHandle(
@@ -226,6 +235,7 @@ namespace Compass
                    particle_pass,
                    ssao_pass,
                    ssao_blur_pass,
+                   light_cube_pass,
                    vulkan_rhi->m_current_swapchain_image_index);
                    
         g_runtime_global_context.m_debugdraw_manager->draw(vulkan_rhi->m_current_swapchain_image_index);
@@ -246,6 +256,7 @@ namespace Compass
         CombineUIPass&    combine_ui_pass    = *(static_cast<CombineUIPass*>(m_combine_ui_pass.get()));
         PickPass&         pick_pass          = *(static_cast<PickPass*>(m_pick_pass.get()));
         ParticlePass&     particle_pass      = *(static_cast<ParticlePass*>(m_particle_pass.get()));
+        LightCubePass&    light_cube_pass    = *(static_cast<LightCubePass*>(m_light_cube_pass.get()));
 
         main_camera_pass.updateAfterFramebufferRecreate();
         ssao_pass.updateAfterFramebufferRecreate(
@@ -264,6 +275,7 @@ namespace Compass
             main_camera_pass.getFramebufferImageViews()[_main_camera_pass_backup_buffer_even]);
         pick_pass.recreateFramebuffer();
         particle_pass.updateAfterFramebufferRecreate();
+        light_cube_pass.updateAfterFramebufferRecreate();
         g_runtime_global_context.m_debugdraw_manager->updateAfterRecreateSwapchain();
     }
     uint32_t RenderPipeline::getGuidOfPickedMesh(const Vector2& picked_uv)
