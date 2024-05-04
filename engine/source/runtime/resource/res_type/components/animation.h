@@ -35,12 +35,8 @@ namespace Compass
 
     public:
         std::string skeleton_file_path;
-        BlendState  blend_state;
-        // animation to skeleton map
-        float       frame_position; // 0-1
+        std::vector<Reflection::ReflectionPtr<ClipBase>> m_clips;
 
-        META(Disable)
-        AnimationResult animation_result;
     };
 
 } // namespace Compass

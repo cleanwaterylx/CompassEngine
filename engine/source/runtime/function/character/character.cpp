@@ -77,9 +77,9 @@ namespace Compass
 
         m_position = new_position;
 
-        //float blend_ratio = std::max(1.f, motor_component->getSpeedRatio());
+        //float m_blend_ratio = std::max(1.f, motor_component->getSpeedRatio());
 
-        //float frame_length = delta_time * blend_ratio;
+        //float frame_length = delta_time * m_blend_ratio;
         //m_position =
         //    (m_position * (s_camera_blend_time - frame_length) + new_position * frame_length) / s_camera_blend_time;
         //m_position =

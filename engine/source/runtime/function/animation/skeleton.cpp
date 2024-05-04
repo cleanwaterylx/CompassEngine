@@ -36,6 +36,59 @@ namespace Compass
         }
     }
 
+    void Skeleton::applyPose(const AnimationPose& pose)
+    {
+        for (int i = 0; i < pose.m_bone_poses.size(); i++)
+        {
+            int bone_index = i;
+            if (pose.m_reorder)
+            {
+                bone_index = pose.m_bone_indexs[i];
+            }
+            Bone& bone = m_bones[bone_index];
+            bone.setOrientation(pose.m_bone_poses[i].m_rotation);
+            bone.setScale(pose.m_bone_poses[i].m_scale);
+            bone.setPosition(pose.m_bone_poses[i].m_position);
+        }
+        for (size_t i = 0; i < m_bone_count; i++)
+        {
+            m_bones[i].update();
+        }
+    }
+
+    void Skeleton::applyAdditivePose(const AnimationPose& pose)
+    {
+        for (int i = 0; i < pose.m_bone_poses.size() && i < m_bone_count; i++)
+        {
+            int bone_index = i;
+            if (pose.m_reorder)
+            {
+                bone_index = pose.m_bone_indexs[i];
+            }
+            Bone& bone = m_bones[bone_index];
+            bone.rotate(pose.m_bone_poses[i].m_rotation);
+            bone.scale(pose.m_bone_poses[i].m_scale);
+            bone.translate(pose.m_bone_poses[i].m_position);
+        }
+        for (size_t i = 0; i < m_bone_count; i++)
+        {
+            m_bones[i].update();
+        }
+    }
+
+    void Skeleton::extractPose(AnimationPose& pose)
+    {
+        pose.m_reorder = false;
+        pose.m_bone_poses.resize(m_bone_count);
+        for (int i = 0; i < m_bone_count; i++)
+        {
+            Bone& bone                      = m_bones[i];
+            pose.m_bone_poses[i].m_rotation = bone.getOrientation();
+            pose.m_bone_poses[i].m_scale    = bone.getScale();
+            pose.m_bone_poses[i].m_position = bone.getPosition();
+        }
+    }
+
     void Skeleton::applyAnimation(const BlendStateWithClipData& blend_state)
     {
         if (!m_bones)
@@ -45,9 +98,9 @@ namespace Compass
         resetSkeleton();
         for (size_t clip_index = 0; clip_index < 1; clip_index++)
         {
-            const AnimationClip& animation_clip = blend_state.blend_clip[clip_index];
-            const float          phase          = blend_state.blend_ratio[clip_index];
-            const AnimSkelMap&   anim_skel_map  = blend_state.blend_anim_skel_map[clip_index];
+            const AnimationClip& animation_clip = blend_state.m_blend_clip[clip_index];
+            const float          phase          = blend_state.m_blend_ratio[clip_index];
+            const AnimSkelMap&   anim_skel_map  = blend_state.m_blend_anim_skel_map[clip_index];
 
             float exact_frame        = phase * (animation_clip.total_frame - 1);
             int   current_frame_low  = floor(exact_frame);
@@ -60,7 +113,7 @@ namespace Compass
             {
                 AnimationChannel channel    = animation_clip.node_channels[node_index];
                 size_t           bone_index = anim_skel_map.convert[node_index];
-                float            weight     = 1; // blend_state.blend_weight[clip_index]->blend_weight[bone_index];
+                float            weight     = 1; // blend_state.m_blend_weight[clip_index]->m_blend_weight[bone_index];
                 weight                      = 1;
                 if (fabs(weight) < 0.0001f)
                 {

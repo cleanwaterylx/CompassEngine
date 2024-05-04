@@ -25,35 +25,102 @@
         },
         {
             "$context": {
-                "animation_res": {
-                    "blend_state": {
-                        "blend_anim_skel_map_path": [
-                            "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
-                        ],
-                        "blend_clip_file_length": [
-                            0.76666998863220215
-                        ],
-                        "blend_clip_file_path": [
-                            "asset/objects/character/player/components/animation/data/W2_CrouchWalk_Aim_F_Loop_IP.animation_clip.json"
-                        ],
-                        "blend_mask_file_path": [
-                            "asset/objects/character/player/components/animation/data/anim.skeleton_mask.json",
-                            "asset/objects/character/player/components/animation/data/anim.skeleton_mask.json"
-                        ],
-                        "blend_ratio": [
-                            0
-                        ],
-                        "blend_weight": [
-                            1
-                        ],
-                        "clip_count": 1
+              "animation_res": {
+                "skeleton_file_path": "asset/objects/character/player/components/animation/data/skeleton_data_root.skeleton.json",
+                "clips": [
+                  {
+                    "$context": {
+                      "name": "idle_walk_run",
+                      "clip_count": 3,
+                      "blend_clip_file_path": [
+                        "asset/objects/character/player/components/animation/data/idle.animation_clip.json",
+                        "asset/objects/character/player/components/animation/data/walk.animation_clip.json",
+                        "asset/objects/character/player/components/animation/data/run.animation_clip.json"
+                      ],
+                      "blend_clip_file_length": [
+                        3.36667,
+                        1.26667,
+                        0.76667
+                      ],
+                      "blend_anim_skel_map_path": [
+                        "asset/objects/character/player/components/animation/data/anim.skeleton_map.json",
+                        "asset/objects/character/player/components/animation/data/anim.skeleton_map.json",
+                        "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
+                      ],
+                      "blend_weight": [
+                        1.0,
+                        0.0,
+                        0.0
+                      ],
+                      "blend_ratio": [
+                        0,
+                        0,
+                        0
+                      ],
+                      "blend_mask_file_path": [
+                        "asset/objects/character/player/components/animation/data/anim.skeleton_mask.json",
+                        "asset/objects/character/player/components/animation/data/anim.skeleton_mask.json",
+                        "asset/objects/character/player/components/animation/data/anim.skeleton_mask.json"
+                      ],
+                      "key": "speed",
+                      "values": [
+                        0.0,
+                        2.0,
+                        4.0
+                      ]
                     },
-                    "frame_position": 0,
-                    "skeleton_file_path": "asset/objects/character/player/components/animation/data/skeleton_data_root.skeleton.json"
-                }
+                    "$typeName": "BlendSpace1D"
+                  },
+                  {
+                    "$context": {
+                      "name": "walk_start",
+                      "clip_file_path": "asset/objects/character/player/components/animation/data/walk_forward_start.animation_clip.json",
+                      "clip_file_length": 1.46667,
+                      "anim_skel_map_path": "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
+                    },
+                    "$typeName": "BasicClip"
+                  },
+                  {
+                    "$context": {
+                      "name": "walk_stop",
+                      "clip_file_path": "asset/objects/character/player/components/animation/data/walk_forward_end.animation_clip.json",
+                      "clip_file_length": 1.30,
+                      "anim_skel_map_path": "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
+                    },
+                    "$typeName": "BasicClip"
+                  },
+                  {
+                    "$context": {
+                      "name": "jump_start",
+                      "clip_file_path": "asset/objects/character/player/components/animation/data/jump_start.animation_clip.json",
+                      "clip_file_length": 0.6,
+                      "anim_skel_map_path": "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
+                    },
+                    "$typeName": "BasicClip"
+                  },
+                  {
+                    "$context": {
+                      "name": "jump_loop",
+                      "clip_file_path": "asset/objects/character/player/components/animation/data/jump_loop.animation_clip.json",
+                      "clip_file_length": 1.86667,
+                      "anim_skel_map_path": "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
+                    },
+                    "$typeName": "BasicClip"
+                  },
+                  {
+                    "$context": {
+                      "name": "jump_stop",
+                      "clip_file_path": "asset/objects/character/player/components/animation/data/jump_end.animation_clip.json",
+                      "clip_file_length": 0.8,
+                      "anim_skel_map_path": "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
+                    },
+                    "$typeName": "BasicClip"
+                  }
+                ]
+              }
             },
             "$typeName": "AnimationComponent"
-        },
+          },
         {
             "$context": {
                 "mesh_res": {

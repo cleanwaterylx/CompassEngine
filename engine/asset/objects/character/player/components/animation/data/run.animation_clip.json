@@ -21540,9 +21540,14 @@
           },
           {
             "y": 0.0
+          },
+          {
+            "y": 0.0
           }
         ],
         "rotation_keys": [
+          {
+          },
           {
           },
           {
@@ -21698,10 +21703,15 @@
             "x": 1.0,
             "y": 1.0,
             "z": 1.0
+          },
+          {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
           }
         ]
       }
     ]
   },
-  "skeleton_file_path": "D:/data/workspace/piccolotest/piccolo/build/asset/animations/skeleton_data_chaos_characters_00_lod002.json"
+  "skeleton_file_path": "objects/character/player/components/animation/data/skeleton_data_root.skeleton.json"
 }
