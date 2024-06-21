@@ -21,4 +21,6 @@ set(CMAKE_INSTALL_PREFIX "${COMPASS_ROOT_DIR}/bin")
 set(BINARY_ROOT_DIR "${CMAKE_INSTALL_PREFIX}/")
 
 
+add_compile_options(/WX-)
+
 add_subdirectory(engine)
