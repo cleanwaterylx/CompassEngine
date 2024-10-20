@@ -7,6 +7,7 @@
 #include "runtime/function/render/render_entity.h"
 #include "runtime/function/render/render_guid_allocator.h"
 #include "runtime/function/render/render_object.h"
+#include "editor/include/light_cube.h"
 
 #include <optional>
 #include <vector>
@@ -29,12 +30,15 @@ namespace Compass
 
         // axis, for editor
         std::optional<RenderEntity> m_render_axis;
+        // light cube, for editor
+        std::vector<EditorLightCube> m_render_light_cubes;
 
         // visible objects (updated per frame)
         std::vector<RenderMeshNode> m_directional_light_visible_mesh_nodes;
         std::vector<RenderMeshNode> m_point_lights_visible_mesh_nodes;
         std::vector<RenderMeshNode> m_main_camera_visible_mesh_nodes;
-        RenderAxisNode              m_axis_node;
+        RenderAxisNode              m_axis_node;    // 每次只有一个轴
+        std::vector<RenderLightCubeNode> m_light_cube_nodes;
 
         // clear
         void clear();
@@ -69,6 +73,7 @@ namespace Compass
         void updateVisibleObjectsMainCamera(std::shared_ptr<RenderResource> render_resource,
                                             std::shared_ptr<RenderCamera>   camera);
         void updateVisibleObjectsAxis(std::shared_ptr<RenderResource> render_resource);
+        void updateVisibleObjectsLightCube(std::shared_ptr<RenderResource> render_resource);
         void updateVisibleObjectsParticle(std::shared_ptr<RenderResource> render_resource);
     };
 } // namespace Compass

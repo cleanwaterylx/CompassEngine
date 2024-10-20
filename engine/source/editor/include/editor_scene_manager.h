@@ -1,6 +1,7 @@
 #pragma once
 
 #include "editor/include/axis.h"
+#include "editor/include/light_cube.h"
 
 #include "runtime/function/framework/object/object.h"
 #include "runtime/function/render/render_object.h"
@@ -47,6 +48,7 @@ namespace Compass
 
         void setEditorCamera(std::shared_ptr<RenderCamera> camera) { m_camera = camera; }
         void uploadAxisResource();
+        void uploadLightCubeResource();
         size_t getGuidOfPickedMesh(const Vector2& picked_uv) const;
 
     public:
@@ -63,6 +65,7 @@ namespace Compass
         EditorTranslationAxis m_translation_axis;
         EditorRotationAxis    m_rotation_axis;
         EditorScaleAxis       m_scale_axis;
+        // EditorLightCube       m_light_cube;
 
         GObjectID m_selected_gobject_id{ k_invalid_gobject_id };
         Matrix4x4 m_selected_object_matrix{ Matrix4x4::IDENTITY };

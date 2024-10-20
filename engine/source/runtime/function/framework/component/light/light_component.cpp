@@ -36,21 +36,35 @@ namespace Compass
 
         TransformComponent* transform_component = m_parent_object.lock()->tryGetComponent(TransformComponent);
 
-        m_light_res.m_position = transform_component->getPosition();
-
-        RenderSwapContext& render_swap_context = g_runtime_global_context.m_render_system->getSwapContext();
-        RenderSwapData&    logic_swap_data     = render_swap_context.getLogicSwapData();
-
-        if(logic_swap_data.m_light_swap_data.has_value())
+        if(transform_component->isDirty())
         {
-            logic_swap_data.m_light_swap_data->m_point_lights.push_back(m_light_res);
+            m_light_res.m_position = transform_component->getPosition();
+
+            LightCubeDesc dirty_light;
+            dirty_light.setId(m_parent_object.lock()->getID());
+            dirty_light.setPointLight(m_light_res);
+            dirty_light.setTransform(transform_component->getMatrix());
+
+            RenderSwapContext& render_swap_context = g_runtime_global_context.m_render_system->getSwapContext();
+            RenderSwapData&    logic_swap_data     = render_swap_context.getLogicSwapData();
+
+            // logic_swap_data.addDirtyGameObject(GameObjectDesc {m_parent_object.lock()->getID(), std::vector<GameObjectPartDesc>{dirty_light}});
+            logic_swap_data.addLightCubeObject(dirty_light);
+
+            if(logic_swap_data.m_light_swap_data.has_value())
+            {
+                logic_swap_data.m_light_swap_data->m_point_lights.push_back(m_light_res);
+            }
+            else
+            {
+                LightSwapData light_swap_data;
+                light_swap_data.m_point_lights.push_back(m_light_res);
+                logic_swap_data.m_light_swap_data = light_swap_data;
+            }
+
         }
-        else
-        {
-            LightSwapData light_swap_data;
-            light_swap_data.m_point_lights.push_back(m_light_res);
-            logic_swap_data.m_light_swap_data = light_swap_data;
-        }
+        
+
     }
 
 

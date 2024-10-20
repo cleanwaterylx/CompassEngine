@@ -17,6 +17,7 @@ namespace Compass
         updateVisibleObjectsMainCamera(render_resource, camera);
         updateVisibleObjectsAxis(render_resource);
         updateVisibleObjectsParticle(render_resource);
+        updateVisibleObjectsLightCube(render_resource);
     }
 
     void RenderScene::setVisibleNodesReference()
@@ -25,6 +26,7 @@ namespace Compass
         RenderPass::m_visible_nodes.p_point_lights_visible_mesh_nodes      = &m_point_lights_visible_mesh_nodes;
         RenderPass::m_visible_nodes.p_main_camera_visible_mesh_nodes       = &m_main_camera_visible_mesh_nodes;
         RenderPass::m_visible_nodes.p_axis_node                            = &m_axis_node;
+        RenderPass::m_visible_nodes.p_light_cube_nodes                      = &m_light_cube_nodes;
     }
 
     GuidAllocator<GameObjectPartId>& RenderScene::getInstanceIdAllocator() { return m_instance_id_allocator; }
@@ -141,7 +143,9 @@ namespace Compass
             point_lights_bounding_spheres[i].m_center = m_point_light_list.m_lights[i].m_position;
             point_lights_bounding_spheres[i].m_radius = m_point_light_list.m_lights[i].m_radius;
         }
+        // update light cube entity
 
+        // todo 可能是entity对pointLight不可见导致阴影错误
         for (const RenderEntity& entity : m_render_entities)
         {
             BoundingBox mesh_asset_bounding_box {entity.m_bounding_box.getMinCorner(),
@@ -194,6 +198,7 @@ namespace Compass
 
         ClusterFrustum f = CreateClusterFrustumFromMatrix(proj_view_matrix, -1.0, 1.0, -1.0, 1.0, 0.0, 1.0);
 
+        // 做视锥外物体的剔除
         for (const RenderEntity& entity : m_render_entities)
         {
             BoundingBox mesh_asset_bounding_box {entity.m_bounding_box.getMinCorner(),
@@ -235,6 +240,26 @@ namespace Compass
             VulkanMesh& mesh_asset             = render_resource->getEntityMesh(axis);
             m_axis_node.ref_mesh               = &mesh_asset;
             m_axis_node.enable_vertex_blending = axis.m_enable_vertex_blending;
+        }
+    }
+
+    void RenderScene::updateVisibleObjectsLightCube(std::shared_ptr<RenderResource> render_resource)
+    {
+        m_light_cube_nodes.clear();
+        // 光源要保持前向渲染，同时需要具有深度
+        for( const RenderEntity& light_cube : m_render_light_cubes)
+        {
+            m_light_cube_nodes.emplace_back();
+            RenderLightCubeNode& temp_node = m_light_cube_nodes.back();
+
+            temp_node.model_matrix = &light_cube.m_model_matrix;
+            temp_node.node_id = light_cube.m_instance_id;
+             
+            VulkanMesh& mesh_asset = render_resource->getEntityMesh(light_cube);
+            temp_node.ref_mesh = &mesh_asset;
+            
+            VulkanPBRMaterial& material_asset = render_resource->getEntityMaterial(light_cube);
+            temp_node.ref_material            = &material_asset;
         }
     }
 

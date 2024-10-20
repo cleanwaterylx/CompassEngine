@@ -2,6 +2,7 @@
 
 #include "runtime/core/math/matrix4.h"
 #include "runtime/function/framework/object/object_id_allocator.h"
+#include "runtime/resource/res_type/global/global_rendering.h"
 
 #include <string>
 #include <vector>
@@ -93,6 +94,24 @@ namespace Compass
     private:
         GObjectID                       m_go_id {k_invalid_gobject_id};
         std::vector<GameObjectPartDesc> m_object_parts;
+    };
+
+    class LightCubeDesc
+    {
+    public:
+        LightCubeDesc() : m_go_id(0) {}
+
+        GObjectID getId() const { return m_go_id; }
+        const PointLight& getPointLight() const { return m_point_light; }
+        void setId(GObjectID id) { m_go_id = id; };
+        void setPointLight(PointLight pl) { m_point_light = pl; }
+        void setTransform(Matrix4x4 M) { m_transform_desc.m_transform_matrix = M; }
+        GameObjectTransformDesc getGameObjectTransformDesc() const { return m_transform_desc; }
+
+    private:
+        GObjectID  m_go_id {k_invalid_gobject_id};
+        GameObjectTransformDesc  m_transform_desc;
+        PointLight m_point_light;
     };
 } // namespace Compass
 

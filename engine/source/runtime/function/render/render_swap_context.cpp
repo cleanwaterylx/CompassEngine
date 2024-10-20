@@ -91,6 +91,11 @@ namespace Compass
         m_swap_data[m_render_swap_data_index].m_light_swap_data.reset();
     }
 
+    void RenderSwapContext::resetLightCubeResourceSwapData()
+    {
+        m_swap_data[m_render_swap_data_index].m_light_cube_resource_desc.reset();
+    }
+
     void RenderSwapContext::swap()
     {
         resetLevelResourceSwapData();
@@ -171,6 +176,20 @@ namespace Compass
             EmitterTransformRequest request;
             request.add(desc);
             m_emitter_transform_request = request;
+        }
+    }
+
+    void RenderSwapData::addLightCubeObject(LightCubeDesc& desc)
+    {
+        if(m_light_cube_resource_desc.has_value())
+        {
+            m_light_cube_resource_desc->m_light_cube_descs.push_back(desc);
+        }
+        else
+        {
+            LightCubeResourceDesc light_cube_desc;
+            light_cube_desc.m_light_cube_descs.push_back(desc);
+            m_light_cube_resource_desc = light_cube_desc;
         }
     }
 

@@ -263,6 +263,14 @@ namespace Compass
         bool        enable_vertex_blending {false};
     };
 
+    struct RenderLightCubeNode
+    {
+        const Matrix4x4*   model_matrix { nullptr };
+        VulkanMesh* ref_mesh {nullptr};
+        VulkanPBRMaterial* ref_material {nullptr};
+        uint32_t    node_id;
+    };
+
     struct TextureDataToUpdate
     {
         void*              base_color_image_pixels;

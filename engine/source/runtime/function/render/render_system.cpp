@@ -20,6 +20,8 @@
 
 #include "runtime/function/render/interface/vulkan/vulkan_rhi.h"
 
+#include "editor/include/light_cube.h"
+
 namespace Compass
 {
     RenderSystem::~RenderSystem()
@@ -263,6 +265,10 @@ namespace Compass
         // todo dir light
         // update point lights
         m_render_scene->m_point_light_list.m_lights = swap_data.m_light_swap_data->m_point_lights;
+        for(auto point_light : swap_data.m_light_swap_data->m_point_lights)
+        {
+
+        }
 
         // TODO: update global resources if needed
         if (swap_data.m_level_resource_desc.has_value())
@@ -274,6 +280,7 @@ namespace Compass
         }
 
         // update game object if needed
+        // m_game_object_resource_desc is a queue
         if (swap_data.m_game_object_resource_desc.has_value())
         {
             while (!swap_data.m_game_object_resource_desc->isEmpty())
@@ -283,7 +290,7 @@ namespace Compass
                 for (size_t part_index = 0; part_index < gobject.getObjectParts().size(); part_index++)
                 {
                     const auto&      game_object_part = gobject.getObjectParts()[part_index];
-                    GameObjectPartId part_id          = {gobject.getId(), part_index};
+                    GameObjectPartId part_id          = {gobject.getId(), part_index};      //  {go_id, part_id}
 
                     bool is_entity_in_scene = m_render_scene->getInstanceIdAllocator().hasElement(part_id);
 
@@ -451,6 +458,75 @@ namespace Compass
             std::static_pointer_cast<ParticlePass>(m_render_pipeline->m_particle_pass)
                 ->setTransformIndices(swap_data.m_emitter_transform_request->m_transform_descs);
             m_swap_context.resetEmitterTransformSwapData();
+        }
+
+        // process light_cube
+        if (swap_data.m_light_cube_resource_desc.has_value())
+        {
+            for (auto light_cube_desc : swap_data.m_light_cube_resource_desc->m_light_cube_descs)
+            {
+                GameObjectPartId part_id = {light_cube_desc.getId(), 0};
+
+                bool is_entity_in_scene = m_render_scene->getInstanceIdAllocator().hasElement(part_id);
+
+                EditorLightCube light_cube;
+                light_cube.m_instance_id =
+                        static_cast<uint32_t>(m_render_scene->getInstanceIdAllocator().allocGuid(part_id));
+
+                light_cube.m_model_matrix = light_cube_desc.getGameObjectTransformDesc().m_transform_matrix;
+
+                m_render_scene->addInstanceIdToMap(light_cube.m_instance_id, light_cube_desc.getId());
+                
+                MeshSourceDesc mesh_source = {"light_cube"};
+                bool is_mesh_loaded = m_render_scene->getMeshAssetIdAllocator().hasElement(mesh_source);
+                light_cube.m_mesh_asset_id = m_render_scene->getMeshAssetIdAllocator().allocGuid(mesh_source);
+                if (!is_mesh_loaded)
+                {
+                    m_render_resource->uploadGameObjectRenderResource(m_rhi, light_cube, light_cube.m_mesh_data);
+                }
+
+                // todo 改变点光源的材质
+                MaterialSourceDesc material_source;
+                material_source = {
+                            asset_manager->getFullPath("asset/texture/default/albedo.jpg").generic_string(),
+                            asset_manager->getFullPath("asset/texture/default/mr.jpg").generic_string(),
+                            asset_manager->getFullPath("asset/texture/default/normal.jpg").generic_string(),
+                            "",
+                            ""};
+
+                bool is_material_loaded = m_render_scene->getMaterialAssetAllocator().hasElement(material_source);
+
+                RenderMaterialData material_data;
+                if (!is_material_loaded)
+                {
+                    material_data = m_render_resource->loadMaterialData(material_source);
+                }
+
+                light_cube.m_material_asset_id =
+                    m_render_scene->getMaterialAssetAllocator().allocGuid(material_source);
+
+                if (!is_material_loaded)
+                {
+                    m_render_resource->uploadGameObjectRenderResource(m_rhi, light_cube, material_data);
+                }
+
+                if (!is_entity_in_scene)
+                {
+                    m_render_scene->m_render_light_cubes.push_back(light_cube);
+                }
+                else
+                {
+                    for (auto& cube : m_render_scene->m_render_light_cubes)
+                    {
+                        if (cube.m_instance_id == light_cube.m_instance_id)
+                        {
+                            cube = light_cube;
+                            break;
+                        }
+                    }
+                }
+            }
+            m_swap_context.resetLightCubeResourceSwapData();
         }
     }
 } // namespace Compass

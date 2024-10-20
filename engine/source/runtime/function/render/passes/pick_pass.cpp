@@ -451,6 +451,18 @@ namespace Compass
             model_nodes.push_back(temp);
         }
 
+        for (RenderLightCubeNode& node : *(m_visible_nodes.p_light_cube_nodes))
+        {
+            auto& mesh_instanced = main_camera_mesh_drawcall_batch[node.ref_material];
+            auto& model_nodes    = mesh_instanced[node.ref_mesh];
+
+            MeshNode temp;
+            temp.model_matrix = node.model_matrix;
+            temp.node_id = node.node_id;
+
+            model_nodes.push_back(temp);
+        }
+
         m_rhi->prepareContext();
 
         // reset storage buffer offset
