@@ -50,7 +50,6 @@ void main()
     highp mat3 TBN = mat3(tangent, bitangent, normal);
 
     highp float occlusion = 0.0f;
-    const highp float bias = 0.01f;
     highp vec3 samplePos;
     for(int i = 0; i < ssao_kernel_size; i++)
     {
@@ -63,12 +62,14 @@ void main()
         offset_pos.xyz = offset_pos.xyz * 0.5f + 0.5f;
         highp float sampleDepth = texture(in_position_depth, offset_pos.xy * scale + offset).z;
 
-        highp float rangeCheck = smoothstep(0.0, 1.0, ssao_radius / abs(fragPos.z - sampleDepth));
-        occlusion += (sampleDepth >= samplePos.z + bias ? 1.0 : 0.0) * rangeCheck; 
-        // occlusion += (sampleDepth >= samplePos.z + bias ? 1.0 : 0.0); 
+        highp float rangeCheck = smoothstep(0.0, 1.0, ssao_radius / max(abs(fragPos.z - sampleDepth), 0.0001));
+        rangeCheck *= rangeCheck;
+        occlusion += (sampleDepth >= samplePos.z + ssao_bias ? 1.0 : 0.0) * rangeCheck;
     }
 
     occlusion = 1.0 - (occlusion / float(ssao_kernel_size));
+    occlusion = clamp(1.0 - (1.0 - occlusion) * ssao_strength, 0.0, 1.0);
+    occlusion = pow(occlusion, ssao_power);
     outFragColor.x = occlusion;
 }
 

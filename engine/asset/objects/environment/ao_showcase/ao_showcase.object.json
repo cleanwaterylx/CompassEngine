@@ -1,0 +1,344 @@
+{
+  "components": [
+    {
+      "$context": {
+        "transform": {
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "w": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        }
+      },
+      "$typeName": "TransformComponent"
+    },
+    {
+      "$context": {
+        "mesh_res": {
+          "sub_meshes": [
+            {
+              "material": "asset/objects/environment/_material/white.material.json",
+              "obj_file_ref": "asset/objects/basic/cube.obj",
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0.15
+                },
+                "rotation": {
+                  "w": 1,
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 4.8,
+                  "y": 2.8,
+                  "z": 0.3
+                }
+              }
+            },
+            {
+              "material": "asset/objects/environment/_material/white.material.json",
+              "obj_file_ref": "asset/objects/basic/cube.obj",
+              "transform": {
+                "position": {
+                  "x": -2.15,
+                  "y": 0,
+                  "z": 1.15
+                },
+                "rotation": {
+                  "w": 1,
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.3,
+                  "y": 2.5,
+                  "z": 2
+                }
+              }
+            },
+            {
+              "material": "asset/objects/environment/_material/white.material.json",
+              "obj_file_ref": "asset/objects/basic/cube.obj",
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": -1.1,
+                  "z": 1.15
+                },
+                "rotation": {
+                  "w": 1,
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 4,
+                  "y": 0.3,
+                  "z": 2
+                }
+              }
+            },
+            {
+              "material": "asset/objects/environment/_material/white.material.json",
+              "obj_file_ref": "asset/objects/basic/cube.obj",
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": 1.1,
+                  "z": 1.15
+                },
+                "rotation": {
+                  "w": 1,
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 4,
+                  "y": 0.3,
+                  "z": 2
+                }
+              }
+            },
+            {
+              "material": "asset/objects/environment/_material/white.material.json",
+              "obj_file_ref": "asset/objects/basic/cube.obj",
+              "transform": {
+                "position": {
+                  "x": 1.45,
+                  "y": 0,
+                  "z": 2.15
+                },
+                "rotation": {
+                  "w": 1,
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1.4,
+                  "y": 2.2,
+                  "z": 0.3
+                }
+              }
+            },
+            {
+              "material": "asset/objects/environment/_material/white.material.json",
+              "obj_file_ref": "asset/objects/basic/cube.obj",
+              "transform": {
+                "position": {
+                  "x": -1.15,
+                  "y": 0,
+                  "z": 1.05
+                },
+                "rotation": {
+                  "w": 1,
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.18,
+                  "y": 2.05,
+                  "z": 1.8
+                }
+              }
+            },
+            {
+              "material": "asset/objects/environment/_material/white.material.json",
+              "obj_file_ref": "asset/objects/basic/cube.obj",
+              "transform": {
+                "position": {
+                  "x": -0.35,
+                  "y": 0,
+                  "z": 1.05
+                },
+                "rotation": {
+                  "w": 1,
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.18,
+                  "y": 2.05,
+                  "z": 1.8
+                }
+              }
+            },
+            {
+              "material": "asset/objects/environment/_material/white.material.json",
+              "obj_file_ref": "asset/objects/basic/cube.obj",
+              "transform": {
+                "position": {
+                  "x": 0.45,
+                  "y": 0,
+                  "z": 1.05
+                },
+                "rotation": {
+                  "w": 1,
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.18,
+                  "y": 2.05,
+                  "z": 1.8
+                }
+              }
+            },
+            {
+              "material": "asset/objects/environment/_material/white.material.json",
+              "obj_file_ref": "asset/objects/basic/cube.obj",
+              "transform": {
+                "position": {
+                  "x": 1.4,
+                  "y": 0,
+                  "z": 0.3
+                },
+                "rotation": {
+                  "w": 1,
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.9,
+                  "y": 2,
+                  "z": 0.3
+                }
+              }
+            },
+            {
+              "material": "asset/objects/environment/_material/white.material.json",
+              "obj_file_ref": "asset/objects/basic/cube.obj",
+              "transform": {
+                "position": {
+                  "x": 1.1,
+                  "y": 0,
+                  "z": 0.6
+                },
+                "rotation": {
+                  "w": 1,
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.9,
+                  "y": 2,
+                  "z": 0.3
+                }
+              }
+            },
+            {
+              "material": "asset/objects/environment/_material/white.material.json",
+              "obj_file_ref": "asset/objects/basic/cube.obj",
+              "transform": {
+                "position": {
+                  "x": 0.8,
+                  "y": 0,
+                  "z": 0.9
+                },
+                "rotation": {
+                  "w": 1,
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.9,
+                  "y": 2,
+                  "z": 0.3
+                }
+              }
+            },
+            {
+              "material": "asset/objects/environment/_material/white.material.json",
+              "obj_file_ref": "asset/objects/basic/cube.obj",
+              "transform": {
+                "position": {
+                  "x": 0.5,
+                  "y": 0,
+                  "z": 1.2
+                },
+                "rotation": {
+                  "w": 1,
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.9,
+                  "y": 2,
+                  "z": 0.3
+                }
+              }
+            },
+            {
+              "material": "asset/objects/environment/_material/white.material.json",
+              "obj_file_ref": "asset/objects/basic/cube.obj",
+              "transform": {
+                "position": {
+                  "x": -1.2,
+                  "y": -0.55,
+                  "z": 0.65
+                },
+                "rotation": {
+                  "w": 1,
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.55,
+                  "y": 0.55,
+                  "z": 1
+                }
+              }
+            },
+            {
+              "material": "asset/objects/environment/_material/white.material.json",
+              "obj_file_ref": "asset/objects/basic/cube.obj",
+              "transform": {
+                "position": {
+                  "x": -1.2,
+                  "y": 0.55,
+                  "z": 0.65
+                },
+                "rotation": {
+                  "w": 1,
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.55,
+                  "y": 0.55,
+                  "z": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "$typeName": "MeshComponent"
+    }
+  ]
+}

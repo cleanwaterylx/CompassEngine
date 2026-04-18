@@ -1,4 +1,4 @@
-#include "runtime/function/render/passes/ssao_blur_pass.h"
+ï»¿#include "runtime/function/render/passes/ssao_blur_pass.h"
 #include "runtime/function/render/render_resource.h"
 
 #include "runtime/function/render/interface/vulkan/vulkan_rhi.h"
@@ -19,8 +19,7 @@ namespace Compass
 
         const SSAOBlurPassInitInfo* _init_info = static_cast<const SSAOBlurPassInitInfo*>(init_info);
 
-        // ssao_pass.renderpass = main_camera.renderpass
-        m_framebuffer.render_pass                  = _init_info->render_pass;
+        m_framebuffer.render_pass = _init_info->render_pass;
 
         setupDescriptorSetLayout();
         setupPipelines();
@@ -33,10 +32,8 @@ namespace Compass
         m_descriptor_infos.resize(1);
 
         RHIDescriptorSetLayoutBinding ssao_global_layout_bindings[2] = {};
-        // ssao blur_object
 
-        RHIDescriptorSetLayoutBinding& ssao_attachment_binding =
-            ssao_global_layout_bindings[0];
+        RHIDescriptorSetLayoutBinding& ssao_attachment_binding = ssao_global_layout_bindings[0];
         ssao_attachment_binding.binding         = 0;
         ssao_attachment_binding.descriptorType  = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         ssao_attachment_binding.descriptorCount = 1;
@@ -66,7 +63,7 @@ namespace Compass
     {
         m_render_pipelines.resize(1);
 
-        RHIDescriptorSetLayout*      descriptorset_layouts[1] = {m_descriptor_infos[0].layout};
+        RHIDescriptorSetLayout* descriptorset_layouts[1] = {m_descriptor_infos[0].layout};
         RHIPipelineLayoutCreateInfo pipeline_layout_create_info {};
         pipeline_layout_create_info.sType          = RHI_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipeline_layout_create_info.setLayoutCount = 1;
@@ -93,7 +90,7 @@ namespace Compass
         frag_pipeline_shader_stage_create_info.pName  = "main";
 
         RHIPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                           frag_pipeline_shader_stage_create_info};
+                                                            frag_pipeline_shader_stage_create_info};
 
         RHIPipelineVertexInputStateCreateInfo vertex_input_state_create_info {};
         vertex_input_state_create_info.sType = RHI_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -115,24 +112,23 @@ namespace Compass
         viewport_state_create_info.pScissors     = m_rhi->getSwapchainInfo().scissor;
 
         RHIPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
-        rasterization_state_create_info.sType            = RHI_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-        rasterization_state_create_info.depthClampEnable = RHI_FALSE;
-        rasterization_state_create_info.rasterizerDiscardEnable = RHI_FALSE;
-        rasterization_state_create_info.polygonMode             = RHI_POLYGON_MODE_FILL;
-        rasterization_state_create_info.lineWidth               = 1.0f;
-        rasterization_state_create_info.cullMode                = RHI_CULL_MODE_BACK_BIT;
-        rasterization_state_create_info.frontFace               = RHI_FRONT_FACE_CLOCKWISE;
-        rasterization_state_create_info.depthBiasEnable         = RHI_FALSE;
-        rasterization_state_create_info.depthBiasConstantFactor = 0.0f;
-        rasterization_state_create_info.depthBiasClamp          = 0.0f;
-        rasterization_state_create_info.depthBiasSlopeFactor    = 0.0f;
+        rasterization_state_create_info.sType                    = RHI_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+        rasterization_state_create_info.depthClampEnable         = RHI_FALSE;
+        rasterization_state_create_info.rasterizerDiscardEnable  = RHI_FALSE;
+        rasterization_state_create_info.polygonMode              = RHI_POLYGON_MODE_FILL;
+        rasterization_state_create_info.lineWidth                = 1.0f;
+        rasterization_state_create_info.cullMode                 = RHI_CULL_MODE_BACK_BIT;
+        rasterization_state_create_info.frontFace                = RHI_FRONT_FACE_CLOCKWISE;
+        rasterization_state_create_info.depthBiasEnable          = RHI_FALSE;
+        rasterization_state_create_info.depthBiasConstantFactor  = 0.0f;
+        rasterization_state_create_info.depthBiasClamp           = 0.0f;
+        rasterization_state_create_info.depthBiasSlopeFactor     = 0.0f;
 
         RHIPipelineMultisampleStateCreateInfo multisample_state_create_info {};
         multisample_state_create_info.sType                = RHI_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
         multisample_state_create_info.sampleShadingEnable  = RHI_FALSE;
         multisample_state_create_info.rasterizationSamples = RHI_SAMPLE_COUNT_1_BIT;
 
-        // Æ¬¶Î×ÅÉ«Æ÷Êä³ö¾ßÌåµÄÑÕÉ«£¬ËüÐèÒªÓëÖ¡»º³åÇøframebufferÖÐÒÑ¾­´æÔÚµÄÑÕÉ«½øÐÐ»ìºÏ
         RHIPipelineColorBlendAttachmentState color_blend_attachment_state {};
         color_blend_attachment_state.colorWriteMask =
             RHI_COLOR_COMPONENT_R_BIT | RHI_COLOR_COMPONENT_G_BIT | RHI_COLOR_COMPONENT_B_BIT | RHI_COLOR_COMPONENT_A_BIT;
@@ -211,18 +207,16 @@ namespace Compass
         }
     }
 
-    // Êµ¼ÊÎªdescriptor bind buffer sample 
-    void SSAOBlurPass::updateAfterFramebufferRecreate(RHIImageView *input_attachment)
+    void SSAOBlurPass::updateAfterFramebufferRecreate(RHIImageView* input_attachment)
     {
         RHIDescriptorImageInfo ssao_input_attachment_info = {};
-        ssao_input_attachment_info.sampler =
-            m_rhi->getOrCreateDefaultSampler(Default_Sampler_Nearest);
+        ssao_input_attachment_info.sampler     = m_rhi->getOrCreateDefaultSampler(Default_Sampler_Nearest);
         ssao_input_attachment_info.imageView   = input_attachment;
         ssao_input_attachment_info.imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         RHIDescriptorBufferInfo ssao_kernel_buffer_info = {};
         ssao_kernel_buffer_info.offset = 0;
-        ssao_kernel_buffer_info.range = sizeof(SSAOKernelObject);
+        ssao_kernel_buffer_info.range  = sizeof(SSAOKernelObject);
         ssao_kernel_buffer_info.buffer = m_global_render_resource->_storage_buffer._ssao_kernel_storage_buffer;
 
         RHIWriteDescriptorSet ssao_blur_descriptor_writes_info[2];
@@ -235,20 +229,20 @@ namespace Compass
         ssao_blur_descriptor_ssao_write_info.dstArrayElement = 0;
         ssao_blur_descriptor_ssao_write_info.descriptorType  = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         ssao_blur_descriptor_ssao_write_info.descriptorCount = 1;
-        ssao_blur_descriptor_ssao_write_info.pImageInfo = &ssao_input_attachment_info;
+        ssao_blur_descriptor_ssao_write_info.pImageInfo      = &ssao_input_attachment_info;
 
         RHIWriteDescriptorSet& ssao_descriptor_kernel_write_info = ssao_blur_descriptor_writes_info[1];
-        ssao_descriptor_kernel_write_info.sType                 = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        ssao_descriptor_kernel_write_info.pNext                 = NULL;
-        ssao_descriptor_kernel_write_info.dstSet                = m_descriptor_infos[0].descriptor_set;
-        ssao_descriptor_kernel_write_info.dstBinding            = 1;
-        ssao_descriptor_kernel_write_info.dstArrayElement       = 0;
-        ssao_descriptor_kernel_write_info.descriptorType        = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-        ssao_descriptor_kernel_write_info.descriptorCount       = 1;
-        ssao_descriptor_kernel_write_info.pBufferInfo           = &ssao_kernel_buffer_info;
+        ssao_descriptor_kernel_write_info.sType           = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        ssao_descriptor_kernel_write_info.pNext           = NULL;
+        ssao_descriptor_kernel_write_info.dstSet          = m_descriptor_infos[0].descriptor_set;
+        ssao_descriptor_kernel_write_info.dstBinding      = 1;
+        ssao_descriptor_kernel_write_info.dstArrayElement = 0;
+        ssao_descriptor_kernel_write_info.descriptorType  = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        ssao_descriptor_kernel_write_info.descriptorCount = 1;
+        ssao_descriptor_kernel_write_info.pBufferInfo     = &ssao_kernel_buffer_info;
 
         m_rhi->updateDescriptorSets(sizeof(ssao_blur_descriptor_writes_info) /
-                                    sizeof(ssao_blur_descriptor_writes_info[0]),
+                                        sizeof(ssao_blur_descriptor_writes_info[0]),
                                     ssao_blur_descriptor_writes_info,
                                     0,
                                     NULL);
@@ -264,15 +258,13 @@ namespace Compass
 
         m_ssao_kernel_storage_buffer_object.offset_x = m_rhi->getSwapchainInfo().viewport->x;
         m_ssao_kernel_storage_buffer_object.offset_y = m_rhi->getSwapchainInfo().viewport->y;
-        m_ssao_kernel_storage_buffer_object.width = m_rhi->getSwapchainInfo().viewport->width;
-        m_ssao_kernel_storage_buffer_object.height = m_rhi->getSwapchainInfo().viewport->height;
-        
+        m_ssao_kernel_storage_buffer_object.width    = m_rhi->getSwapchainInfo().viewport->width;
+        m_ssao_kernel_storage_buffer_object.height   = m_rhi->getSwapchainInfo().viewport->height;
     }
-
 
     void SSAOBlurPass::draw()
     {
-        float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+        float color[4] = {1.0f, 1.0f, 1.0f, 1.0f};
         m_rhi->pushEvent(m_rhi->getCurrentCommandBuffer(), "SSAO Blur", color);
 
         m_rhi->cmdBindPipelinePFN(m_rhi->getCurrentCommandBuffer(), RHI_PIPELINE_BIND_POINT_GRAPHICS, m_render_pipelines[0].pipeline);
@@ -287,9 +279,8 @@ namespace Compass
                                         0,
                                         NULL);
 
-        // set ssao kernel storage buffer data
         (*reinterpret_cast<SSAOKernelObject*>(reinterpret_cast<uintptr_t>(
-            m_global_render_resource->_storage_buffer._ssao_kernel_storage_buffer_memory_pointer))) = 
+            m_global_render_resource->_storage_buffer._ssao_kernel_storage_buffer_memory_pointer))) =
             m_ssao_kernel_storage_buffer_object;
 
         m_rhi->cmdDraw(m_rhi->getCurrentCommandBuffer(), 3, 1, 0, 0);

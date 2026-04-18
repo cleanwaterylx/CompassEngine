@@ -71,8 +71,11 @@ for (highp int light_index = 0; light_index < int(point_light_num) && light_inde
 
 // direct ambient contribution
 highp vec3 La = vec3(0.0f, 0.0f, 0.0f);
-highp float ao = subpassLoad(in_ssao_blur).r;
-La            = basecolor * ambient_light * ao;
+highp float ao_raw = clamp(subpassLoad(in_ssao_blur).r, 0.0, 1.0);
+// Remap SSAO so mid-range occlusion stays visible after tone mapping.
+highp float ao = clamp(1.0 - (1.0 - ao_raw) * 1.35, 0.0, 1.0);
+ao             = pow(ao, 2);
+La             = basecolor * ambient_light * ao;
 
 // indirect environment
 highp vec3 irradiance = texture(irradiance_sampler, origin_samplecube_N).rgb;

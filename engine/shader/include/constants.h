@@ -3,9 +3,12 @@
 #define m_mesh_per_drawcall_max_instance_count 64
 #define m_mesh_vertex_blending_max_joint_count 1024
 #define CHAOS_LAYOUT_MAJOR row_major
-#define NEAR_PLANE 0.1f // Í¶Ó°¾ØÕóµÄ½üÆ½Ãæ
-#define FAR_PLANE 1000.0f // Í¶Ó°¾ØÕóµÄÔ¶Æ½Ãæ 
+#define NEAR_PLANE 0.1f // Í¶Ó°ï¿½ï¿½ï¿½ï¿½Ä½ï¿½Æ½ï¿½ï¿½
+#define FAR_PLANE 1000.0f // Í¶Ó°ï¿½ï¿½ï¿½ï¿½ï¿½Ô¶Æ½ï¿½ï¿½ 
 #define ssao_kernel_size 64
-#define ssao_radius 0.2f
+#define ssao_radius 0.5f
+#define ssao_bias 0.005f
+#define ssao_strength 1.0f
+#define ssao_power 1.0f
 layout(CHAOS_LAYOUT_MAJOR) buffer;
 layout(CHAOS_LAYOUT_MAJOR) uniform;

@@ -380,9 +380,13 @@ namespace Compass
             auto              res = m_vulkan_pbr_materials.insert(std::make_pair(assetid, std::move(temp)));
             assert(res.second);
 
-            float empty_image[] = { 0.5f, 0.5f, 0.5f, 0.5f };
+            uint8_t default_base_color_image[]         = {255, 255, 255, 255};
+            uint8_t default_metallic_roughness_image[] = {0, 255, 0, 255};
+            uint8_t default_normal_image[]             = {128, 128, 255, 255};
+            uint8_t default_occlusion_image[]          = {255, 255, 255, 255};
+            uint8_t default_emissive_image[]           = {0, 0, 0, 255};
 
-            void* base_color_image_pixels = empty_image;
+            void* base_color_image_pixels = default_base_color_image;
             uint32_t           base_color_image_width = 1;
             uint32_t           base_color_image_height = 1;
             RHIFormat base_color_image_format = RHIFormat::RHI_FORMAT_R8G8B8A8_SRGB;
@@ -394,7 +398,7 @@ namespace Compass
                 base_color_image_format = material_data.m_base_color_texture->m_format;
             }
 
-            void* metallic_roughness_image_pixels = empty_image;
+            void* metallic_roughness_image_pixels = default_metallic_roughness_image;
             uint32_t           metallic_roughness_width = 1;
             uint32_t           metallic_roughness_height = 1;
             RHIFormat metallic_roughness_format = RHIFormat::RHI_FORMAT_R8G8B8A8_UNORM;
@@ -406,7 +410,7 @@ namespace Compass
                 metallic_roughness_format = material_data.m_metallic_roughness_texture->m_format;
             }
 
-            void* normal_roughness_image_pixels = empty_image;
+            void* normal_roughness_image_pixels = default_normal_image;
             uint32_t           normal_roughness_width = 1;
             uint32_t           normal_roughness_height = 1;
             RHIFormat normal_roughness_format = RHIFormat::RHI_FORMAT_R8G8B8A8_UNORM;
@@ -418,7 +422,7 @@ namespace Compass
                 normal_roughness_format = material_data.m_normal_texture->m_format;
             }
 
-            void* occlusion_image_pixels = empty_image;
+            void* occlusion_image_pixels = default_occlusion_image;
             uint32_t           occlusion_image_width = 1;
             uint32_t           occlusion_image_height = 1;
             RHIFormat occlusion_image_format = RHIFormat::RHI_FORMAT_R8G8B8A8_UNORM;
@@ -430,7 +434,7 @@ namespace Compass
                 occlusion_image_format = material_data.m_occlusion_texture->m_format;
             }
 
-            void* emissive_image_pixels = empty_image;
+            void* emissive_image_pixels = default_emissive_image;
             uint32_t           emissive_image_width = 1;
             uint32_t           emissive_image_height = 1;
             RHIFormat emissive_image_format = RHIFormat::RHI_FORMAT_R8G8B8A8_UNORM;
