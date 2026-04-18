@@ -1,4 +1,4 @@
-#include "runtime/function/render/passes/main_camera_pass.h"
+ï»¿#include "runtime/function/render/passes/main_camera_pass.h"
 #include "runtime/function/render/render_helper.h"
 #include "runtime/function/render/render_mesh.h"
 #include "runtime/function/render/render_resource.h"
@@ -61,6 +61,7 @@ namespace Compass
         m_framebuffer.attachments[_main_camera_pass_gbuffer_normal].format     = RHI_FORMAT_R32G32B32A32_SFLOAT;
         m_framebuffer.attachments[_main_camera_pass_ssao].format               = RHI_FORMAT_R32G32B32A32_SFLOAT;
         m_framebuffer.attachments[_main_camera_pass_ssao_blur].format          = RHI_FORMAT_R32G32B32A32_SFLOAT;
+        m_framebuffer.attachments[_main_camera_pass_ssr].format                = RHI_FORMAT_R16G16B16A16_SFLOAT;
         m_framebuffer.attachments[_main_camera_pass_backup_buffer_odd].format  = RHI_FORMAT_R16G16B16A16_SFLOAT;
         m_framebuffer.attachments[_main_camera_pass_backup_buffer_even].format = RHI_FORMAT_R16G16B16A16_SFLOAT;
 
@@ -246,6 +247,18 @@ namespace Compass
         ssao_blur_attachment_description.initialLayout  = RHI_IMAGE_LAYOUT_UNDEFINED;
         ssao_blur_attachment_description.finalLayout    = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
+        RHIAttachmentDescription& ssr_attachment_description =
+            attachments[_main_camera_pass_ssr];
+        ssr_attachment_description.format =
+            m_framebuffer.attachments[_main_camera_pass_ssr].format;
+        ssr_attachment_description.samples        = RHI_SAMPLE_COUNT_1_BIT;
+        ssr_attachment_description.loadOp         = RHI_ATTACHMENT_LOAD_OP_CLEAR;
+        ssr_attachment_description.storeOp        = RHI_ATTACHMENT_STORE_OP_DONT_CARE;
+        ssr_attachment_description.stencilLoadOp  = RHI_ATTACHMENT_LOAD_OP_DONT_CARE;
+        ssr_attachment_description.stencilStoreOp = RHI_ATTACHMENT_STORE_OP_DONT_CARE;
+        ssr_attachment_description.initialLayout  = RHI_IMAGE_LAYOUT_UNDEFINED;
+        ssr_attachment_description.finalLayout    = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
         RHIAttachmentDescription& post_process_odd_color_attachment_description =
             attachments[_main_camera_pass_post_process_buffer_odd];
         post_process_odd_color_attachment_description.format =
@@ -294,7 +307,7 @@ namespace Compass
         RHISubpassDescription subpasses[_main_camera_subpass_count] = {};
 
         // typedef struct VkAttachmentReference {
-        //      uint32_t         attachment;  //attachmentÊÇÒ»¸öÕûÊýÖµ£¬ÓÃÓÚÊ¶±ðVkRenderPassCreateInfo::pAttachmentsÖÐÏàÓ¦Ë÷ÒýµÄAttachment
+        //      uint32_t         attachment;  //attachmentæ˜¯ä¸€ä¸ªæ•´æ•°å€¼ï¼Œç”¨äºŽè¯†åˆ«VkRenderPassCreateInfo::pAttachmentsä¸­ç›¸åº”ç´¢å¼•çš„Attachment
         //      VkImageLayout    layout;
         // }    VkAttachmentReference;
         RHIAttachmentReference gbuffer_pass_color_attachments_reference[5] = {};
@@ -401,7 +414,7 @@ namespace Compass
 
 
 // typedef struct VkAttachmentReference {
-//      uint32_t         attachment;  //attachmentÊÇÒ»¸öÕûÊýÖµ£¬ÓÃÓÚÊ¶±ðVkRenderPassCreateInfo::pAttachmentsÖÐÏàÓ¦Ë÷ÒýµÄAttachment
+//      uint32_t         attachment;  //attachmentæ˜¯ä¸€ä¸ªæ•´æ•°å€¼ï¼Œç”¨äºŽè¯†åˆ«VkRenderPassCreateInfo::pAttachmentsä¸­ç›¸åº”ç´¢å¼•çš„Attachment
 //      VkImageLayout    layout;
 // }    VkAttachmentReference;
         RHIAttachmentReference forward_lighting_pass_color_attachments_reference[1] = {};
@@ -424,17 +437,46 @@ namespace Compass
         forward_lighting_pass.preserveAttachmentCount = 0;
         forward_lighting_pass.pPreserveAttachments    = NULL;
 
-        // light cube pass description
+        RHIAttachmentReference ssr_pass_input_attachments_reference[4] = {};
+        ssr_pass_input_attachments_reference[0].attachment =
+            &backup_odd_color_attachment_description - attachments;
+        ssr_pass_input_attachments_reference[0].layout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        ssr_pass_input_attachments_reference[1].attachment =
+            &gbuffer_metallic_roughness_shadingmodeid_attachment_description - attachments;
+        ssr_pass_input_attachments_reference[1].layout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        ssr_pass_input_attachments_reference[2].attachment =
+            &gbuffer_position_attachment_description - attachments;
+        ssr_pass_input_attachments_reference[2].layout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        ssr_pass_input_attachments_reference[3].attachment =
+            &gbuffer_normal_in_view_attachment_description - attachments;
+        ssr_pass_input_attachments_reference[3].layout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        RHIAttachmentReference ssr_pass_color_attachment_reference[1] = {};
+        ssr_pass_color_attachment_reference[0].attachment = &ssr_attachment_description - attachments;
+        ssr_pass_color_attachment_reference[0].layout     = RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        RHISubpassDescription& ssr_pass = subpasses[_main_camera_subpass_ssr];
+        ssr_pass.pipelineBindPoint      = RHI_PIPELINE_BIND_POINT_GRAPHICS;
+        ssr_pass.inputAttachmentCount   = sizeof(ssr_pass_input_attachments_reference) /
+                                        sizeof(ssr_pass_input_attachments_reference[0]);
+        ssr_pass.pInputAttachments       = ssr_pass_input_attachments_reference;
+        ssr_pass.colorAttachmentCount    = sizeof(ssr_pass_color_attachment_reference) /
+                                        sizeof(ssr_pass_color_attachment_reference[0]);
+        ssr_pass.pColorAttachments       = ssr_pass_color_attachment_reference;
+        ssr_pass.pDepthStencilAttachment = NULL;
+        ssr_pass.preserveAttachmentCount = 0;
+        ssr_pass.pPreserveAttachments    = NULL;
+
         RHIAttachmentReference light_cube_pass_color_attachments_reference[1] = {};
-        light_cube_pass_color_attachments_reference[0].attachment = &backup_odd_color_attachment_description - attachments;
-        light_cube_pass_color_attachments_reference[0].layout = RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        light_cube_pass_color_attachments_reference[0].attachment = &ssr_attachment_description - attachments;
+        light_cube_pass_color_attachments_reference[0].layout     = RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         RHISubpassDescription& light_cube_pass = subpasses[_main_camera_subpass_light_cube];
-        light_cube_pass.pipelineBindPoint     = RHI_PIPELINE_BIND_POINT_GRAPHICS;
-        light_cube_pass.inputAttachmentCount  = 0U;
-        light_cube_pass.pInputAttachments     = NULL;
-        light_cube_pass.colorAttachmentCount  = sizeof(light_cube_pass_color_attachments_reference) /
-                                                     sizeof(light_cube_pass_color_attachments_reference[0]);
+        light_cube_pass.pipelineBindPoint      = RHI_PIPELINE_BIND_POINT_GRAPHICS;
+        light_cube_pass.inputAttachmentCount   = 0U;
+        light_cube_pass.pInputAttachments      = NULL;
+        light_cube_pass.colorAttachmentCount   = sizeof(light_cube_pass_color_attachments_reference) /
+                                               sizeof(light_cube_pass_color_attachments_reference[0]);
         light_cube_pass.pColorAttachments       = &light_cube_pass_color_attachments_reference[0];
         light_cube_pass.pDepthStencilAttachment = NULL;
         light_cube_pass.preserveAttachmentCount = 0;
@@ -442,7 +484,7 @@ namespace Compass
 
         RHIAttachmentReference tone_mapping_pass_input_attachment_reference {};
         tone_mapping_pass_input_attachment_reference.attachment =
-            &backup_odd_color_attachment_description - attachments;
+            &ssr_attachment_description - attachments;
         tone_mapping_pass_input_attachment_reference.layout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         RHIAttachmentReference tone_mapping_pass_color_attachment_reference {};
@@ -553,8 +595,8 @@ namespace Compass
         combine_ui_pass.preserveAttachmentCount = 0;
         combine_ui_pass.pPreserveAttachments    = NULL;
 
-        // Í¨¹ýVkSubpassDependencyÀ´ÃèÊöRenderPassÖÐ²»Í¬SubPassÖ®¼ä»òÍ¬Ò»¸öSubPassµÄÄÚ´æºÍÖ´ÐÐÍ¬²½ÒÀÀµ
-        RHISubpassDependency dependencies[12] = {};
+        // é€šè¿‡VkSubpassDependencyæ¥æè¿°RenderPassä¸­ä¸åŒSubPassä¹‹é—´æˆ–åŒä¸€ä¸ªSubPassçš„å†…å­˜å’Œæ‰§è¡ŒåŒæ­¥ä¾èµ–
+        RHISubpassDependency dependencies[14] = {};
 
         RHISubpassDependency& deferred_lighting_pass_depend_on_shadow_map_pass = dependencies[0];
         deferred_lighting_pass_depend_on_shadow_map_pass.srcSubpass           = RHI_SUBPASS_EXTERNAL;
@@ -630,20 +672,46 @@ namespace Compass
             RHI_ACCESS_SHADER_READ_BIT | RHI_ACCESS_COLOR_ATTACHMENT_READ_BIT;
         forward_lighting_pass_depend_on_deferred_lighting_pass.dependencyFlags = RHI_DEPENDENCY_BY_REGION_BIT;
 
-        RHISubpassDependency& light_cube_pass_depend_on_forward_lighting_pass = dependencies[6];
-        light_cube_pass_depend_on_forward_lighting_pass.srcSubpass = _main_camera_subpass_forward_lighting;
-        light_cube_pass_depend_on_forward_lighting_pass.dstSubpass = _main_camera_subpass_light_cube;
-        light_cube_pass_depend_on_forward_lighting_pass.srcStageMask =
+        RHISubpassDependency& ssr_pass_depend_on_forward_lighting_pass = dependencies[6];
+        ssr_pass_depend_on_forward_lighting_pass.srcSubpass = _main_camera_subpass_forward_lighting;
+        ssr_pass_depend_on_forward_lighting_pass.dstSubpass = _main_camera_subpass_ssr;
+        ssr_pass_depend_on_forward_lighting_pass.srcStageMask =
             RHI_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | RHI_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        light_cube_pass_depend_on_forward_lighting_pass.dstStageMask =
+        ssr_pass_depend_on_forward_lighting_pass.dstStageMask =
             RHI_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | RHI_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        light_cube_pass_depend_on_forward_lighting_pass.srcAccessMask =
+        ssr_pass_depend_on_forward_lighting_pass.srcAccessMask =
             RHI_ACCESS_SHADER_WRITE_BIT | RHI_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        light_cube_pass_depend_on_forward_lighting_pass.dstAccessMask =
+        ssr_pass_depend_on_forward_lighting_pass.dstAccessMask =
             RHI_ACCESS_SHADER_READ_BIT | RHI_ACCESS_COLOR_ATTACHMENT_READ_BIT;
-        light_cube_pass_depend_on_forward_lighting_pass.dependencyFlags = RHI_DEPENDENCY_BY_REGION_BIT;
+        ssr_pass_depend_on_forward_lighting_pass.dependencyFlags = RHI_DEPENDENCY_BY_REGION_BIT;
 
-        RHISubpassDependency& tone_mapping_pass_depend_on_light_cube_pass = dependencies[7];
+        RHISubpassDependency& ssr_pass_depend_on_gbuffer_pass = dependencies[7];
+        ssr_pass_depend_on_gbuffer_pass.srcSubpass = _main_camera_subpass_gbuffer;
+        ssr_pass_depend_on_gbuffer_pass.dstSubpass = _main_camera_subpass_ssr;
+        ssr_pass_depend_on_gbuffer_pass.srcStageMask =
+            RHI_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | RHI_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        ssr_pass_depend_on_gbuffer_pass.dstStageMask =
+            RHI_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | RHI_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        ssr_pass_depend_on_gbuffer_pass.srcAccessMask =
+            RHI_ACCESS_SHADER_WRITE_BIT | RHI_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        ssr_pass_depend_on_gbuffer_pass.dstAccessMask =
+            RHI_ACCESS_SHADER_READ_BIT | RHI_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+        ssr_pass_depend_on_gbuffer_pass.dependencyFlags = RHI_DEPENDENCY_BY_REGION_BIT;
+
+        RHISubpassDependency& light_cube_pass_depend_on_ssr_pass = dependencies[8];
+        light_cube_pass_depend_on_ssr_pass.srcSubpass = _main_camera_subpass_ssr;
+        light_cube_pass_depend_on_ssr_pass.dstSubpass = _main_camera_subpass_light_cube;
+        light_cube_pass_depend_on_ssr_pass.srcStageMask =
+            RHI_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | RHI_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        light_cube_pass_depend_on_ssr_pass.dstStageMask =
+            RHI_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | RHI_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        light_cube_pass_depend_on_ssr_pass.srcAccessMask =
+            RHI_ACCESS_SHADER_WRITE_BIT | RHI_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        light_cube_pass_depend_on_ssr_pass.dstAccessMask =
+            RHI_ACCESS_SHADER_READ_BIT | RHI_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+        light_cube_pass_depend_on_ssr_pass.dependencyFlags = RHI_DEPENDENCY_BY_REGION_BIT;
+
+        RHISubpassDependency& tone_mapping_pass_depend_on_light_cube_pass = dependencies[9];
         tone_mapping_pass_depend_on_light_cube_pass.srcSubpass           = _main_camera_subpass_light_cube;
         tone_mapping_pass_depend_on_light_cube_pass.dstSubpass           = _main_camera_subpass_tone_mapping;
         tone_mapping_pass_depend_on_light_cube_pass.srcStageMask =
@@ -656,7 +724,7 @@ namespace Compass
             RHI_ACCESS_SHADER_READ_BIT | RHI_ACCESS_COLOR_ATTACHMENT_READ_BIT;
         tone_mapping_pass_depend_on_light_cube_pass.dependencyFlags = RHI_DEPENDENCY_BY_REGION_BIT;
 
-        RHISubpassDependency& color_grading_pass_depend_on_tone_mapping_pass = dependencies[8];
+        RHISubpassDependency& color_grading_pass_depend_on_tone_mapping_pass = dependencies[10];
         color_grading_pass_depend_on_tone_mapping_pass.srcSubpass           = _main_camera_subpass_tone_mapping;
         color_grading_pass_depend_on_tone_mapping_pass.dstSubpass           = _main_camera_subpass_color_grading;
         color_grading_pass_depend_on_tone_mapping_pass.srcStageMask =
@@ -669,7 +737,7 @@ namespace Compass
             RHI_ACCESS_SHADER_READ_BIT | RHI_ACCESS_COLOR_ATTACHMENT_READ_BIT;
         color_grading_pass_depend_on_tone_mapping_pass.dependencyFlags = RHI_DEPENDENCY_BY_REGION_BIT;
 
-        RHISubpassDependency& fxaa_pass_depend_on_color_grading_pass = dependencies[9];
+        RHISubpassDependency& fxaa_pass_depend_on_color_grading_pass = dependencies[11];
         fxaa_pass_depend_on_color_grading_pass.srcSubpass           = _main_camera_subpass_color_grading;
         fxaa_pass_depend_on_color_grading_pass.dstSubpass           = _main_camera_subpass_fxaa;
         fxaa_pass_depend_on_color_grading_pass.srcStageMask =
@@ -681,7 +749,7 @@ namespace Compass
         fxaa_pass_depend_on_color_grading_pass.dstAccessMask =
             RHI_ACCESS_SHADER_READ_BIT | RHI_ACCESS_COLOR_ATTACHMENT_READ_BIT;
 
-        RHISubpassDependency& ui_pass_depend_on_fxaa_pass = dependencies[10];
+        RHISubpassDependency& ui_pass_depend_on_fxaa_pass = dependencies[12];
         ui_pass_depend_on_fxaa_pass.srcSubpass           = _main_camera_subpass_fxaa;
         ui_pass_depend_on_fxaa_pass.dstSubpass           = _main_camera_subpass_ui;
         ui_pass_depend_on_fxaa_pass.srcStageMask =
@@ -692,7 +760,7 @@ namespace Compass
         ui_pass_depend_on_fxaa_pass.dstAccessMask   = RHI_ACCESS_SHADER_READ_BIT | RHI_ACCESS_COLOR_ATTACHMENT_READ_BIT;
         ui_pass_depend_on_fxaa_pass.dependencyFlags = RHI_DEPENDENCY_BY_REGION_BIT;
 
-        RHISubpassDependency& combine_ui_pass_depend_on_ui_pass = dependencies[11];
+        RHISubpassDependency& combine_ui_pass_depend_on_ui_pass = dependencies[13];
         combine_ui_pass_depend_on_ui_pass.srcSubpass           = _main_camera_subpass_ui;
         combine_ui_pass_depend_on_ui_pass.dstSubpass           = _main_camera_subpass_combine_ui;
         combine_ui_pass_depend_on_ui_pass.srcStageMask =
@@ -1723,7 +1791,7 @@ namespace Compass
 
     void MainCameraPass::setupDescriptorSet()
     {
-        // ÒÑÔÚrhiÖÐ¶¨ÒåÁËDescriptorPoolµÄ´óÐ¡
+        // å·²åœ¨rhiä¸­å®šä¹‰äº†DescriptorPoolçš„å¤§å°
         setupModelGlobalDescriptorSet();
         setupSkyboxDescriptorSet();
         setupAxisDescriptorSet();
@@ -2092,6 +2160,7 @@ namespace Compass
                 m_framebuffer.attachments[_main_camera_pass_backup_buffer_even].view,
                 m_framebuffer.attachments[_main_camera_pass_ssao].view,
                 m_framebuffer.attachments[_main_camera_pass_ssao_blur].view,
+                m_framebuffer.attachments[_main_camera_pass_ssr].view,
                 m_framebuffer.attachments[_main_camera_pass_post_process_buffer_odd].view,
                 m_framebuffer.attachments[_main_camera_pass_post_process_buffer_even].view,
                 m_rhi->getDepthImageInfo().depth_image_view,
@@ -2147,6 +2216,7 @@ namespace Compass
                               ParticlePass&     particle_pass,
                               SSAOPass&         ssao_pass,
                               SSAOBlurPass&     ssao_blur_pass,
+                              SSRPass&          ssr_pass,
                               LightCubePass&    light_cube_pass,
                               uint32_t          current_swapchain_image_index)
     {
@@ -2168,6 +2238,7 @@ namespace Compass
             clear_values[_main_camera_pass_backup_buffer_even].color       = {{0.0f, 0.0f, 0.0f, 1.0f}};
             clear_values[_main_camera_pass_ssao].color                     = {{0.0f, 0.0f, 0.0f, 0.0f}};
             clear_values[_main_camera_pass_ssao_blur].color                = {{0.0f, 0.0f, 0.0f, 0.0f}};
+            clear_values[_main_camera_pass_ssr].color                      = {{0.0f, 0.0f, 0.0f, 1.0f}};
             clear_values[_main_camera_pass_post_process_buffer_odd].color  = {{0.0f, 0.0f, 0.0f, 1.0f}};
             clear_values[_main_camera_pass_post_process_buffer_even].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
             clear_values[_main_camera_pass_depth].depthStencil             = {1.0f, 0};
@@ -2221,7 +2292,14 @@ namespace Compass
 
         m_rhi->cmdNextSubpassPFN(m_rhi->getCurrentCommandBuffer(), RHI_SUBPASS_CONTENTS_INLINE);
 
-        // light cube pass
+        m_rhi->pushEvent(m_rhi->getCurrentCommandBuffer(), "SSR", color);
+
+        ssr_pass.draw();
+
+        m_rhi->popEvent(m_rhi->getCurrentCommandBuffer());
+
+        m_rhi->cmdNextSubpassPFN(m_rhi->getCurrentCommandBuffer(), RHI_SUBPASS_CONTENTS_INLINE);
+
         m_rhi->pushEvent(m_rhi->getCurrentCommandBuffer(), "Light Cube", color);
 
         light_cube_pass.draw();
@@ -2280,6 +2358,8 @@ namespace Compass
                                      UIPass&           ui_pass,
                                      CombineUIPass&    combine_ui_pass,
                                      ParticlePass&     particle_pass,
+                                     SSRPass&          ssr_pass,
+                                     LightCubePass&    light_cube_pass,
                                      uint32_t          current_swapchain_image_index)
     {
         {
@@ -2291,23 +2371,31 @@ namespace Compass
             renderpass_begin_info.renderArea.extent = m_rhi->getSwapchainInfo().extent;
 
             RHIClearValue clear_values[_main_camera_pass_attachment_count];
-            clear_values[_main_camera_pass_gbuffer_a].color          = {{0.0f, 0.0f, 0.0f, 0.0f}};
-            clear_values[_main_camera_pass_gbuffer_b].color          = {{0.0f, 0.0f, 0.0f, 0.0f}};
-            clear_values[_main_camera_pass_gbuffer_c].color          = {{0.0f, 0.0f, 0.0f, 0.0f}};
-            clear_values[_main_camera_pass_backup_buffer_odd].color  = {{0.0f, 0.0f, 0.0f, 1.0f}};
-            clear_values[_main_camera_pass_backup_buffer_even].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
-            clear_values[_main_camera_pass_depth].depthStencil       = {1.0f, 0};
-            clear_values[_main_camera_pass_swap_chain_image].color   = {{0.0f, 0.0f, 0.0f, 1.0f}};
-            renderpass_begin_info.clearValueCount                    = (sizeof(clear_values) / sizeof(clear_values[0]));
-            renderpass_begin_info.pClearValues                       = clear_values;
+            clear_values[_main_camera_pass_gbuffer_a].color                = {{0.0f, 0.0f, 0.0f, 0.0f}};
+            clear_values[_main_camera_pass_gbuffer_b].color                = {{0.0f, 0.0f, 0.0f, 0.0f}};
+            clear_values[_main_camera_pass_gbuffer_c].color                = {{0.0f, 0.0f, 0.0f, 0.0f}};
+            clear_values[_main_camera_pass_gbuffer_pos].color              = {{0.0f, 0.0f, 0.0f, 0.0f}};
+            clear_values[_main_camera_pass_gbuffer_normal].color           = {{0.0f, 0.0f, 0.0f, 0.0f}};
+            clear_values[_main_camera_pass_backup_buffer_odd].color        = {{0.0f, 0.0f, 0.0f, 1.0f}};
+            clear_values[_main_camera_pass_backup_buffer_even].color       = {{0.0f, 0.0f, 0.0f, 1.0f}};
+            clear_values[_main_camera_pass_ssao].color                     = {{0.0f, 0.0f, 0.0f, 0.0f}};
+            clear_values[_main_camera_pass_ssao_blur].color                = {{0.0f, 0.0f, 0.0f, 0.0f}};
+            clear_values[_main_camera_pass_ssr].color                      = {{0.0f, 0.0f, 0.0f, 1.0f}};
+            clear_values[_main_camera_pass_post_process_buffer_odd].color  = {{0.0f, 0.0f, 0.0f, 1.0f}};
+            clear_values[_main_camera_pass_post_process_buffer_even].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+            clear_values[_main_camera_pass_depth].depthStencil             = {1.0f, 0};
+            clear_values[_main_camera_pass_swap_chain_image].color         = {{0.0f, 0.0f, 0.0f, 1.0f}};
+            renderpass_begin_info.clearValueCount = (sizeof(clear_values) / sizeof(clear_values[0]));
+            renderpass_begin_info.pClearValues    = clear_values;
 
             m_rhi->cmdBeginRenderPassPFN(m_rhi->getCurrentCommandBuffer(), &renderpass_begin_info, RHI_SUBPASS_CONTENTS_INLINE);
             // base pass
         }
 
         m_rhi->cmdNextSubpassPFN(m_rhi->getCurrentCommandBuffer(), RHI_SUBPASS_CONTENTS_INLINE);
-        // defer lighting pass
-        m_rhi->cmdNextSubpassPFN(m_rhi->getCurrentCommandBuffer(), RHI_SUBPASS_CONTENTS_INLINE);       
+        m_rhi->cmdNextSubpassPFN(m_rhi->getCurrentCommandBuffer(), RHI_SUBPASS_CONTENTS_INLINE);
+        m_rhi->cmdNextSubpassPFN(m_rhi->getCurrentCommandBuffer(), RHI_SUBPASS_CONTENTS_INLINE);
+        m_rhi->cmdNextSubpassPFN(m_rhi->getCurrentCommandBuffer(), RHI_SUBPASS_CONTENTS_INLINE);
 
         // forward lighting pass
         float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -2316,6 +2404,22 @@ namespace Compass
         drawMeshLighting();
         drawSkybox();
         particle_pass.draw();
+
+        m_rhi->popEvent(m_rhi->getCurrentCommandBuffer());
+
+        m_rhi->cmdNextSubpassPFN(m_rhi->getCurrentCommandBuffer(), RHI_SUBPASS_CONTENTS_INLINE);
+
+        m_rhi->pushEvent(m_rhi->getCurrentCommandBuffer(), "SSR", color);
+
+        ssr_pass.draw();
+
+        m_rhi->popEvent(m_rhi->getCurrentCommandBuffer());
+
+        m_rhi->cmdNextSubpassPFN(m_rhi->getCurrentCommandBuffer(), RHI_SUBPASS_CONTENTS_INLINE);
+
+        m_rhi->pushEvent(m_rhi->getCurrentCommandBuffer(), "Light Cube", color);
+
+        light_cube_pass.draw();
 
         m_rhi->popEvent(m_rhi->getCurrentCommandBuffer());
 

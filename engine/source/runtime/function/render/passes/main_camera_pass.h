@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "runtime/function/render/render_pass.h"
 
@@ -8,6 +8,7 @@
 #include "runtime/function/render/passes/tone_mapping_pass.h"
 #include "runtime/function/render/passes/ui_pass.h"
 #include "runtime/function/render/passes/particle_pass.h"
+#include "runtime/function/render/passes/ssr_pass.h"
 #include "runtime/function/render/passes/ssao_pass.h"
 #include "runtime/function/render/passes/ssao_blur_pass.h"
 #include "runtime/function/render/passes/light_cube_pass.h"
@@ -70,6 +71,7 @@ namespace Compass
             ParticlePass& particle_pass,
             SSAOPass& ssao_pass,
             SSAOBlurPass& ssao_blur_pass,
+            SSRPass& ssr_pass,
             LightCubePass& light_cube_pass,
             uint32_t          current_swapchain_image_index);
 
@@ -79,6 +81,8 @@ namespace Compass
             UIPass& ui_pass,
             CombineUIPass& combine_ui_pass,
             ParticlePass& particle_pass,
+            SSRPass& ssr_pass,
+            LightCubePass& light_cube_pass,
             uint32_t          current_swapchain_image_index);
 
         void copyNormalAndDepthImage();

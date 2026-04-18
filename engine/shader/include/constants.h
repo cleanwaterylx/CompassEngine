@@ -10,5 +10,12 @@
 #define ssao_bias 0.005f
 #define ssao_strength 1.0f
 #define ssao_power 1.0f
+#define ssr_roughness_threshold 0.2f
+#define ssr_max_steps 128
+#define ssr_binary_search_steps 5
+#define ssr_step_stride 0.1f
+#define ssr_ray_bias 0.02f
+#define ssr_thickness 0.12f
+#define ssr_max_distance 100.0f
 layout(CHAOS_LAYOUT_MAJOR) buffer;
 layout(CHAOS_LAYOUT_MAJOR) uniform;

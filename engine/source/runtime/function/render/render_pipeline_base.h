@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "runtime/core/math/vector2.h"
 #include "runtime/function/render/render_pass_base.h"
@@ -44,6 +44,7 @@ namespace Compass
         std::shared_ptr<RenderPassBase> m_main_camera_pass;
         std::shared_ptr<RenderPassBase> m_ssao_pass;
         std::shared_ptr<RenderPassBase> m_ssao_blur_pass;
+        std::shared_ptr<RenderPassBase> m_ssr_pass;
         std::shared_ptr<RenderPassBase> m_color_grading_pass;
         std::shared_ptr<RenderPassBase> m_fxaa_pass;
         std::shared_ptr<RenderPassBase> m_tone_mapping_pass;

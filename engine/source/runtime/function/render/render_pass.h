@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "runtime/function/render/render_common.h"
 #include "runtime/function/render/render_pass_base.h"
@@ -13,7 +13,7 @@ namespace Compass
 {
     class VulkanRHI;
     
-    // ÄäÃûÃ¶¾Ù <=> ¶¨Òå
+    // åŒ¿åæšä¸¾ <=> å®šä¹‰
     // subpass
     enum 
     {
@@ -26,13 +26,14 @@ namespace Compass
         _main_camera_pass_backup_buffer_even            = 6,
         _main_camera_pass_ssao                          = 7,      
         _main_camera_pass_ssao_blur                     = 8,    // custom_attachment
-        _main_camera_pass_post_process_buffer_odd       = 9,
-        _main_camera_pass_post_process_buffer_even      = 10,
-        _main_camera_pass_depth                         = 11,
-        _main_camera_pass_swap_chain_image              = 12,
-        _main_camera_pass_custom_attachment_count       = 9,
+        _main_camera_pass_ssr                           = 9,
+        _main_camera_pass_post_process_buffer_odd       = 10,
+        _main_camera_pass_post_process_buffer_even      = 11,
+        _main_camera_pass_depth                         = 12,
+        _main_camera_pass_swap_chain_image              = 13,
+        _main_camera_pass_custom_attachment_count       = 10,
         _main_camera_pass_post_process_attachment_count = 2,
-        _main_camera_pass_attachment_count              = 13,
+        _main_camera_pass_attachment_count              = 14,
     };
 
     enum
@@ -42,6 +43,7 @@ namespace Compass
         _main_camera_subpass_ssao_blur,
         _main_camera_subpass_deferred_lighting,
         _main_camera_subpass_forward_lighting,
+        _main_camera_subpass_ssr,
         _main_camera_subpass_light_cube,
         _main_camera_subpass_tone_mapping,
         _main_camera_subpass_color_grading,

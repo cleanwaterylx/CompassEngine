@@ -1,8 +1,9 @@
-#include "runtime/function/render/render_pipeline.h"
+﻿#include "runtime/function/render/render_pipeline.h"
 #include "runtime/function/render/interface/vulkan/vulkan_rhi.h"
 
 #include "runtime/function/render/passes/ssao_pass.h"
 #include "runtime/function/render/passes/ssao_blur_pass.h"
+#include "runtime/function/render/passes/ssr_pass.h"
 #include "runtime/function/render/passes/color_grading_pass.h"
 #include "runtime/function/render/passes/combine_ui_pass.h"
 #include "runtime/function/render/passes/directional_light_pass.h"
@@ -27,6 +28,7 @@ namespace Compass
         m_main_camera_pass        = std::make_shared<MainCameraPass>();
         m_ssao_pass               = std::make_shared<SSAOPass>();
         m_ssao_blur_pass          = std::make_shared<SSAOBlurPass>();
+        m_ssr_pass                = std::make_shared<SSRPass>();
         m_tone_mapping_pass       = std::make_shared<ToneMappingPass>();
         m_color_grading_pass      = std::make_shared<ColorGradingPass>();
         m_ui_pass                 = std::make_shared<UIPass>();
@@ -45,6 +47,7 @@ namespace Compass
         m_main_camera_pass->setCommonInfo(pass_common_info);
         m_ssao_pass->setCommonInfo(pass_common_info);
         m_ssao_blur_pass->setCommonInfo(pass_common_info);
+        m_ssr_pass->setCommonInfo(pass_common_info);
         m_tone_mapping_pass->setCommonInfo(pass_common_info);
         m_color_grading_pass->setCommonInfo(pass_common_info);
         m_ui_pass->setCommonInfo(pass_common_info);
@@ -99,6 +102,18 @@ namespace Compass
         ssao_blur_init_info.input_attachment = _main_camera_pass->getFramebufferImageViews()[_main_camera_pass_ssao];
         m_ssao_blur_pass->initialize(&ssao_blur_init_info);
 
+        SSRPassInitInfo ssr_init_info;
+        ssr_init_info.render_pass = _main_camera_pass->getRenderPass();
+        ssr_init_info.scene_color_input_attachment =
+            _main_camera_pass->getFramebufferImageViews()[_main_camera_pass_backup_buffer_odd];
+        ssr_init_info.gbuffer_metallic_roughness_input_attachment =
+            _main_camera_pass->getFramebufferImageViews()[_main_camera_pass_gbuffer_b];
+        ssr_init_info.gbuffer_position_input_attachment =
+            _main_camera_pass->getFramebufferImageViews()[_main_camera_pass_gbuffer_pos];
+        ssr_init_info.gbuffer_normal_input_attachment =
+            _main_camera_pass->getFramebufferImageViews()[_main_camera_pass_gbuffer_normal];
+        m_ssr_pass->initialize(&ssr_init_info);
+
         // light cube pass init
         LightCubePassInitInfo light_cube_init_info;
         light_cube_init_info.render_pass = _main_camera_pass->getRenderPass();
@@ -107,7 +122,7 @@ namespace Compass
         ToneMappingPassInitInfo tone_mapping_init_info;
         tone_mapping_init_info.render_pass = _main_camera_pass->getRenderPass();
         tone_mapping_init_info.input_attachment =
-            _main_camera_pass->getFramebufferImageViews()[_main_camera_pass_backup_buffer_odd];
+            _main_camera_pass->getFramebufferImageViews()[_main_camera_pass_ssr];
         m_tone_mapping_pass->initialize(&tone_mapping_init_info);
 
         ColorGradingPassInitInfo color_grading_init_info;
@@ -168,6 +183,8 @@ namespace Compass
         UIPass&           ui_pass            = *(static_cast<UIPass*>(m_ui_pass.get()));
         CombineUIPass&    combine_ui_pass    = *(static_cast<CombineUIPass*>(m_combine_ui_pass.get()));
         ParticlePass&     particle_pass      = *(static_cast<ParticlePass*>(m_particle_pass.get()));
+        SSRPass&          ssr_pass           = *(static_cast<SSRPass*>(m_ssr_pass.get()));
+        LightCubePass&    light_cube_pass    = *(static_cast<LightCubePass*>(m_light_cube_pass.get()));
 
         static_cast<ParticlePass*>(m_particle_pass.get())
             ->setRenderCommandBufferHandle(
@@ -180,6 +197,8 @@ namespace Compass
                           ui_pass,
                           combine_ui_pass,
                           particle_pass,
+                          ssr_pass,
+                          light_cube_pass,
                           vulkan_rhi->m_current_swapchain_image_index);
 
         
@@ -220,6 +239,7 @@ namespace Compass
         ParticlePass&     particle_pass      = *(static_cast<ParticlePass*>(m_particle_pass.get()));
         SSAOPass&         ssao_pass          = *(static_cast<SSAOPass*>(m_ssao_pass.get()));
         SSAOBlurPass&     ssao_blur_pass     = *(static_cast<SSAOBlurPass*>(m_ssao_blur_pass.get()));
+        SSRPass&          ssr_pass           = *(static_cast<SSRPass*>(m_ssr_pass.get()));
         LightCubePass&    light_cube_pass    = *(static_cast<LightCubePass*>(m_light_cube_pass.get()));
 
         static_cast<ParticlePass*>(m_particle_pass.get())
@@ -235,6 +255,7 @@ namespace Compass
                    particle_pass,
                    ssao_pass,
                    ssao_blur_pass,
+                   ssr_pass,
                    light_cube_pass,
                    vulkan_rhi->m_current_swapchain_image_index);
                    
@@ -250,6 +271,7 @@ namespace Compass
         MainCameraPass&   main_camera_pass   = *(static_cast<MainCameraPass*>(m_main_camera_pass.get()));
         SSAOPass&         ssao_pass          = *(static_cast<SSAOPass*>(m_ssao_pass.get()));
         SSAOBlurPass&     ssao_blur_pass     = *(static_cast<SSAOBlurPass*>(m_ssao_blur_pass.get()));
+        SSRPass&          ssr_pass           = *(static_cast<SSRPass*>(m_ssr_pass.get()));
         ColorGradingPass& color_grading_pass = *(static_cast<ColorGradingPass*>(m_color_grading_pass.get()));
         FXAAPass&         fxaa_pass          = *(static_cast<FXAAPass*>(m_fxaa_pass.get()));
         ToneMappingPass&  tone_mapping_pass  = *(static_cast<ToneMappingPass*>(m_tone_mapping_pass.get()));
@@ -264,8 +286,13 @@ namespace Compass
             main_camera_pass.getFramebufferImageViews()[_main_camera_pass_gbuffer_normal]
         );
         ssao_blur_pass.updateAfterFramebufferRecreate(main_camera_pass.getFramebufferImageViews()[_main_camera_pass_ssao]);
+        ssr_pass.updateAfterFramebufferRecreate(
+            main_camera_pass.getFramebufferImageViews()[_main_camera_pass_backup_buffer_odd],
+            main_camera_pass.getFramebufferImageViews()[_main_camera_pass_gbuffer_b],
+            main_camera_pass.getFramebufferImageViews()[_main_camera_pass_gbuffer_pos],
+            main_camera_pass.getFramebufferImageViews()[_main_camera_pass_gbuffer_normal]);
         tone_mapping_pass.updateAfterFramebufferRecreate(
-            main_camera_pass.getFramebufferImageViews()[_main_camera_pass_backup_buffer_odd]);
+            main_camera_pass.getFramebufferImageViews()[_main_camera_pass_ssr]);
         color_grading_pass.updateAfterFramebufferRecreate(
             main_camera_pass.getFramebufferImageViews()[_main_camera_pass_backup_buffer_even]);
         fxaa_pass.updateAfterFramebufferRecreate(

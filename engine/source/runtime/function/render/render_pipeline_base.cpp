@@ -1,4 +1,4 @@
-#include "runtime/function/render/render_pipeline_base.h"
+﻿#include "runtime/function/render/render_pipeline_base.h"
 #include "runtime/function/render/debugdraw/debug_draw_manager.h"
 #include "runtime/core/base/macro.h"
 #include "runtime/function/global/global_context.h"
@@ -10,6 +10,7 @@ namespace Compass
         m_main_camera_pass->preparePassData(render_resource);
         m_ssao_pass->preparePassData(render_resource);
         m_ssao_blur_pass->preparePassData(render_resource);
+        m_ssr_pass->preparePassData(render_resource);
         m_pick_pass->preparePassData(render_resource);
         m_directional_light_pass->preparePassData(render_resource);
         m_point_light_shadow_pass->preparePassData(render_resource);
