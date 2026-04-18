@@ -94,6 +94,5 @@ void main()
     {
 #include "mesh_lighting.inl"
     }
-
     out_color = vec4(result_color, 1.0f);
 }

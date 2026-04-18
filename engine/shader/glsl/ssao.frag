@@ -11,7 +11,7 @@ layout(set = 0, binding = 0) uniform sampler2D in_position_depth;
 layout(set = 0, binding = 1) uniform sampler2D in_normal;
 layout(set = 0, binding = 2) uniform sampler2D ssao_noise;
 
-// ×¢ÒâÄÚ´æ¶ÔÆë
+// æ³¨æ„å†…å­˜å¯¹é½
 layout(set = 0, binding = 3) readonly buffer ssao_kernel_buffer
 {
     highp mat4 proj_matrix;

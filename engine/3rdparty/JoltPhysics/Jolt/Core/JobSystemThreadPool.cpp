@@ -6,6 +6,8 @@
 #include <Jolt/Core/JobSystemThreadPool.h>
 #include <Jolt/Core/Profiler.h>
 #include <Jolt/Core/FPException.h>
+#include <chrono>
+using namespace std::chrono_literals;
 
 JPH_SUPPRESS_WARNINGS_STD_BEGIN
 #include <algorithm>

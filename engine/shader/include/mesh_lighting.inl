@@ -87,7 +87,7 @@ highp vec3  specular   = reflection * (F * brdfLUT.x + brdfLUT.y);
 
 highp vec3 kD = 1.0 - F;
 kD *= 1.0 - metallic;
-highp vec3 Libl = (kD * diffuse + specular);
+highp vec3 Libl = (kD * diffuse + specular) * ao;
 
 // directional light
 {
