@@ -293,9 +293,9 @@ namespace Compass
         RHIPipelineViewportStateCreateInfo viewport_state_create_info {};
         viewport_state_create_info.sType         = RHI_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         viewport_state_create_info.viewportCount = 1;
-        viewport_state_create_info.pViewports    = m_rhi->getSwapchainInfo().viewport;
+        viewport_state_create_info.pViewports    = &viewport;
         viewport_state_create_info.scissorCount  = 1;
-        viewport_state_create_info.pScissors     = m_rhi->getSwapchainInfo().scissor;
+        viewport_state_create_info.pScissors     = &scissor;
 
         RHIPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
         rasterization_state_create_info.sType                   = RHI_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;

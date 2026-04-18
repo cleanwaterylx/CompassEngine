@@ -32,7 +32,7 @@
                   "z": 0
                 },
                 "radius": 100,
-                "intensity": 1 
+                "intensity": 10
               }
             },
             "$typeName": "LightComponent"
