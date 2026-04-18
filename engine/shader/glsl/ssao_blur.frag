@@ -28,16 +28,18 @@ void main()
     highp vec2 texcoord = in_texcoord * scale;
     texcoord += offset;       // real texcoord
 
+    const int blurRange = 5;
+    int n = 0;
     highp vec2 texelSize = 1.0 / vec2(width, height);
     highp float result = 0.0;
-    result += texture(in_ssao, texcoord + texelSize * vec2(-1.0, -1.0)).r * 1.0;
-    result += texture(in_ssao, texcoord + texelSize * vec2( 0.0, -1.0)).r * 2.0;
-    result += texture(in_ssao, texcoord + texelSize * vec2( 1.0, -1.0)).r * 1.0;
-    result += texture(in_ssao, texcoord + texelSize * vec2(-1.0,  0.0)).r * 2.0;
-    result += texture(in_ssao, texcoord).r                                   * 4.0;
-    result += texture(in_ssao, texcoord + texelSize * vec2( 1.0,  0.0)).r * 2.0;
-    result += texture(in_ssao, texcoord + texelSize * vec2(-1.0,  1.0)).r * 1.0;
-    result += texture(in_ssao, texcoord + texelSize * vec2( 0.0,  1.0)).r * 2.0;
-    result += texture(in_ssao, texcoord + texelSize * vec2( 1.0,  1.0)).r * 1.0;
-    outFragColor.x = result / 16.0;
+    for (int x = -blurRange; x < blurRange; x++)
+    {
+        for (int y = -blurRange; y < blurRange; y++)
+        {
+            highp vec2 offset = vec2(float(x), float(y)) * texelSize;
+            result += texture(in_ssao, texcoord + offset).r;
+            n++;
+        }
+    }
+    outFragColor.x = result / (float(n));
 }

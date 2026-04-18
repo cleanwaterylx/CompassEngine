@@ -11,8 +11,8 @@ namespace Compass
 {
     struct WindowCreateInfo
     {
-        int         width {1280};
-        int         height {720};
+        int         width {1920};
+        int         height {1080};
         const char* title {"Compass"};
         bool        is_fullscreen {false};
     };
