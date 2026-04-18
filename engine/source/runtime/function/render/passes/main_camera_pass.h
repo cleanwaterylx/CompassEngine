@@ -20,6 +20,7 @@ namespace Compass
     struct MainCameraPassInitInfo : RenderPassInitInfo
     {
         bool enble_fxaa;
+        bool enable_ssr {true};
     };
 
     class MainCameraPass : public RenderPass
@@ -92,6 +93,7 @@ namespace Compass
 
         bool                                         m_is_show_axis{ false };
         bool                                         m_enable_fxaa{ false };
+        bool                                         m_enable_ssr{ true };
         size_t                                       m_selected_axis{ 3 };
         MeshPerframeStorageBufferObject              m_mesh_perframe_storage_buffer_object;
         AxisStorageBufferObject                      m_axis_storage_buffer_object;

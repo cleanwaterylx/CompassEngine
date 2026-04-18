@@ -15,6 +15,7 @@ namespace Compass
     struct RenderPipelineInitInfo
     {
         bool                                enable_fxaa {false};
+        bool                                enable_ssr {true};
         std::shared_ptr<RenderResourceBase> render_resource;
     };
 

@@ -27,6 +27,7 @@ namespace Compass
 
         const MainCameraPassInitInfo* _init_info = static_cast<const MainCameraPassInitInfo*>(init_info);
         m_enable_fxaa                            = _init_info->enble_fxaa;
+        m_enable_ssr                             = _init_info->enable_ssr;
 
         setupAttachments();
         setupRenderPass();
@@ -2294,6 +2295,7 @@ namespace Compass
 
         m_rhi->pushEvent(m_rhi->getCurrentCommandBuffer(), "SSR", color);
 
+        ssr_pass.setEnableSSR(m_enable_ssr);
         ssr_pass.draw();
 
         m_rhi->popEvent(m_rhi->getCurrentCommandBuffer());
@@ -2411,6 +2413,7 @@ namespace Compass
 
         m_rhi->pushEvent(m_rhi->getCurrentCommandBuffer(), "SSR", color);
 
+        ssr_pass.setEnableSSR(m_enable_ssr);
         ssr_pass.draw();
 
         m_rhi->popEvent(m_rhi->getCurrentCommandBuffer());

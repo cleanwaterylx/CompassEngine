@@ -5,12 +5,15 @@
 #include "runtime/function/render/interface/vulkan/vulkan_util.h"
 
 #include <ssr_frag.h>
+#include <ssr_passthrough_frag.h>
 #include <ssr_vert.h>
 
 #include <stdexcept>
 
 namespace Compass
 {
+    void SSRPass::setEnableSSR(bool enable) { m_enable_ssr = enable; }
+
     void SSRPass::initialize(const RenderPassInitInfo* init_info)
     {
         RenderPass::initialize(nullptr);
@@ -78,21 +81,26 @@ namespace Compass
 
     void SSRPass::setupPipelines()
     {
-        m_render_pipelines.resize(1);
+        m_render_pipelines.resize(_render_pipeline_type_count);
 
         RHIDescriptorSetLayout*       descriptorset_layouts[1] = {m_descriptor_infos[0].layout};
-        RHIPipelineLayoutCreateInfo pipeline_layout_create_info {};
-        pipeline_layout_create_info.sType          = RHI_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipeline_layout_create_info.setLayoutCount = 1;
-        pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
-
-        if (m_rhi->createPipelineLayout(&pipeline_layout_create_info, m_render_pipelines[0].layout) != RHI_SUCCESS)
+        for (uint8_t pipeline_index = 0; pipeline_index < _render_pipeline_type_count; ++pipeline_index)
         {
-            throw std::runtime_error("create ssr pipeline layout");
+            RHIPipelineLayoutCreateInfo pipeline_layout_create_info {};
+            pipeline_layout_create_info.sType          = RHI_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            pipeline_layout_create_info.setLayoutCount = 1;
+            pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
+
+            if (m_rhi->createPipelineLayout(&pipeline_layout_create_info, m_render_pipelines[pipeline_index].layout) !=
+                RHI_SUCCESS)
+            {
+                throw std::runtime_error("create ssr pipeline layout");
+            }
         }
 
         RHIShader* vert_shader_module = m_rhi->createShaderModule(SSR_VERT);
-        RHIShader* frag_shader_module = m_rhi->createShaderModule(SSR_FRAG);
+        RHIShader* ssr_frag_shader_module = m_rhi->createShaderModule(SSR_FRAG);
+        RHIShader* passthrough_frag_shader_module = m_rhi->createShaderModule(SSR_PASSTHROUGH_FRAG);
 
         RHIPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
         vert_pipeline_shader_stage_create_info.sType  = RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -103,11 +111,7 @@ namespace Compass
         RHIPipelineShaderStageCreateInfo frag_pipeline_shader_stage_create_info {};
         frag_pipeline_shader_stage_create_info.sType  = RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         frag_pipeline_shader_stage_create_info.stage  = RHI_SHADER_STAGE_FRAGMENT_BIT;
-        frag_pipeline_shader_stage_create_info.module = frag_shader_module;
         frag_pipeline_shader_stage_create_info.pName  = "main";
-
-        RHIPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                            frag_pipeline_shader_stage_create_info};
 
         RHIPipelineVertexInputStateCreateInfo vertex_input_state_create_info {};
         vertex_input_state_create_info.sType                           = RHI_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -186,7 +190,6 @@ namespace Compass
         RHIGraphicsPipelineCreateInfo pipeline_info {};
         pipeline_info.sType               = RHI_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
         pipeline_info.stageCount          = 2;
-        pipeline_info.pStages             = shader_stages;
         pipeline_info.pVertexInputState   = &vertex_input_state_create_info;
         pipeline_info.pInputAssemblyState = &input_assembly_create_info;
         pipeline_info.pViewportState      = &viewport_state_create_info;
@@ -194,19 +197,36 @@ namespace Compass
         pipeline_info.pMultisampleState   = &multisample_state_create_info;
         pipeline_info.pColorBlendState    = &color_blend_state_create_info;
         pipeline_info.pDepthStencilState  = &depth_stencil_create_info;
-        pipeline_info.layout              = m_render_pipelines[0].layout;
         pipeline_info.renderPass          = m_framebuffer.render_pass;
         pipeline_info.subpass             = _main_camera_subpass_ssr;
         pipeline_info.basePipelineHandle  = RHI_NULL_HANDLE;
         pipeline_info.pDynamicState       = &dynamic_state_create_info;
 
-        if (RHI_SUCCESS != m_rhi->createGraphicsPipelines(RHI_NULL_HANDLE, 1, &pipeline_info, m_render_pipelines[0].pipeline))
+        RHIShader* fragment_shader_modules[_render_pipeline_type_count] = {
+            ssr_frag_shader_module,
+            passthrough_frag_shader_module};
+
+        for (uint8_t pipeline_index = 0; pipeline_index < _render_pipeline_type_count; ++pipeline_index)
         {
-            throw std::runtime_error("create ssr graphics pipeline");
+            frag_pipeline_shader_stage_create_info.module = fragment_shader_modules[pipeline_index];
+            RHIPipelineShaderStageCreateInfo shader_stages[] = {
+                vert_pipeline_shader_stage_create_info,
+                frag_pipeline_shader_stage_create_info};
+
+            pipeline_info.pStages = shader_stages;
+            pipeline_info.layout  = m_render_pipelines[pipeline_index].layout;
+
+            if (RHI_SUCCESS !=
+                m_rhi->createGraphicsPipelines(
+                    RHI_NULL_HANDLE, 1, &pipeline_info, m_render_pipelines[pipeline_index].pipeline))
+            {
+                throw std::runtime_error("create ssr graphics pipeline");
+            }
         }
 
         m_rhi->destroyShaderModule(vert_shader_module);
-        m_rhi->destroyShaderModule(frag_shader_module);
+        m_rhi->destroyShaderModule(ssr_frag_shader_module);
+        m_rhi->destroyShaderModule(passthrough_frag_shader_module);
     }
 
     void SSRPass::setupDescriptorSet()
@@ -332,13 +352,18 @@ namespace Compass
         float color[4] = {1.0f, 1.0f, 1.0f, 1.0f};
         m_rhi->pushEvent(m_rhi->getCurrentCommandBuffer(), "SSR", color);
 
+        const uint8_t pipeline_index =
+            m_enable_ssr ? _render_pipeline_type_ssr : _render_pipeline_type_passthrough;
+
         m_rhi->cmdBindPipelinePFN(
-            m_rhi->getCurrentCommandBuffer(), RHI_PIPELINE_BIND_POINT_GRAPHICS, m_render_pipelines[0].pipeline);
+            m_rhi->getCurrentCommandBuffer(),
+            RHI_PIPELINE_BIND_POINT_GRAPHICS,
+            m_render_pipelines[pipeline_index].pipeline);
         m_rhi->cmdSetViewportPFN(m_rhi->getCurrentCommandBuffer(), 0, 1, m_rhi->getSwapchainInfo().viewport);
         m_rhi->cmdSetScissorPFN(m_rhi->getCurrentCommandBuffer(), 0, 1, m_rhi->getSwapchainInfo().scissor);
         m_rhi->cmdBindDescriptorSetsPFN(m_rhi->getCurrentCommandBuffer(),
                                         RHI_PIPELINE_BIND_POINT_GRAPHICS,
-                                        m_render_pipelines[0].layout,
+                                        m_render_pipelines[pipeline_index].layout,
                                         0,
                                         1,
                                         &m_descriptor_infos[0].descriptor_set,

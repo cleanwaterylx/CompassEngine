@@ -1,5 +1,6 @@
 {
   "enable_fxaa": false,
+  "enable_ssr": true,
   "skybox_irradiance_map": {
     "negative_x_map": "asset/texture/sky/skybox_irradiance_X-.hdr",
     "positive_x_map": "asset/texture/sky/skybox_irradiance_X+.hdr",

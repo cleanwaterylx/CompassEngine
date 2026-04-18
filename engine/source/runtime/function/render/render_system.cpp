@@ -75,12 +75,13 @@ namespace Compass
             global_rendering_res.m_directional_light.m_direction.normalisedCopy();
         m_render_scene->m_directional_light.m_color = global_rendering_res.m_directional_light.m_color.toVector3();
         m_render_scene->setVisibleNodesReference();
-        // todo point light 修改render.global.json       
-        // todo 方向光 变化
+        // todo update point lights in rendering.global.json
+        // todo refresh directional light parameters
 
         // initialize render pipeline
         RenderPipelineInitInfo pipeline_init_info;
         pipeline_init_info.enable_fxaa     = global_rendering_res.m_enable_fxaa;
+        pipeline_init_info.enable_ssr      = global_rendering_res.m_enable_ssr;
         pipeline_init_info.render_resource = m_render_resource;
 
         m_render_pipeline        = std::make_shared<RenderPipeline>();
@@ -485,7 +486,7 @@ namespace Compass
                     m_render_resource->uploadGameObjectRenderResource(m_rhi, light_cube, light_cube.m_mesh_data);
                 }
 
-                // todo 改变点光源的材质
+                // todo change point light material
                 MaterialSourceDesc material_source;
                 material_source = {
                             asset_manager->getFullPath("asset/texture/default/albedo.jpg").generic_string(),

@@ -64,6 +64,7 @@ namespace Compass
 
     public:
         bool                m_enable_fxaa {false};
+        bool                m_enable_ssr {true};
         SkyBoxIrradianceMap m_skybox_irradiance_map;
         SkyBoxSpecularMap   m_skybox_specular_map;
         std::string         m_brdf_map;
