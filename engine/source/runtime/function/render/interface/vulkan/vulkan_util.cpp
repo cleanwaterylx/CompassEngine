@@ -244,7 +244,8 @@ namespace Compass
                                             VkImageAspectFlags image_aspect_flags,
                                             VkImageViewType    view_type,
                                             uint32_t           layout_count,
-                                            uint32_t           miplevels)
+                                            uint32_t           miplevels,
+                                            uint32_t           base_mip_level)
     {
         VkImageViewCreateInfo image_view_create_info {};
         image_view_create_info.sType                           = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -252,7 +253,7 @@ namespace Compass
         image_view_create_info.viewType                        = view_type;
         image_view_create_info.format                          = format;
         image_view_create_info.subresourceRange.aspectMask     = image_aspect_flags;
-        image_view_create_info.subresourceRange.baseMipLevel   = 0;
+        image_view_create_info.subresourceRange.baseMipLevel   = base_mip_level;
         image_view_create_info.subresourceRange.levelCount     = miplevels;
         image_view_create_info.subresourceRange.baseArrayLayer = 0;
         image_view_create_info.subresourceRange.layerCount     = layout_count;

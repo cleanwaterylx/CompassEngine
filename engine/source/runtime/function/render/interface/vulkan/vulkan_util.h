@@ -58,7 +58,8 @@ namespace Compass
                                               VkImageAspectFlags image_aspect_flags,
                                               VkImageViewType    view_type,
                                               uint32_t           layout_count,
-                                              uint32_t           miplevels);
+                                              uint32_t           miplevels,
+                                              uint32_t           base_mip_level = 0);
         static void           createGlobalImage(RHI*               rhi,
                                                 VkImage&           image,
                                                 VkImageView&       image_view,

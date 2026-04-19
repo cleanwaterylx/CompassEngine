@@ -1,0 +1,33 @@
+#version 450
+
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+
+layout(set = 0, binding = 0) uniform sampler2D in_linear_depth;
+layout(r32f, set = 0, binding = 1) uniform writeonly image2D out_hiz;
+layout(std140, set = 0, binding = 2) uniform hiz_dispatch_buffer
+{
+    ivec4 input_rect;
+    ivec4 output_rect;
+};
+
+const float kInvalidDepth = 1000000.0;
+
+void main()
+{
+    ivec2 dst_coord = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 dst_size  = imageSize(out_hiz);
+    if (dst_coord.x >= dst_size.x || dst_coord.y >= dst_size.y)
+    {
+        return;
+    }
+
+    if (dst_coord.x < output_rect.x || dst_coord.y < output_rect.y ||
+        dst_coord.x >= output_rect.x + output_rect.z || dst_coord.y >= output_rect.y + output_rect.w)
+    {
+        imageStore(out_hiz, dst_coord, vec4(kInvalidDepth, 0.0, 0.0, 0.0));
+        return;
+    }
+
+    float linear_depth = texelFetch(in_linear_depth, dst_coord, 0).r;
+    imageStore(out_hiz, dst_coord, vec4(linear_depth, 0.0, 0.0, 0.0));
+}

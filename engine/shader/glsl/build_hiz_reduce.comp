@@ -1,0 +1,58 @@
+#version 450
+
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+
+layout(set = 0, binding = 0) uniform sampler2D in_prev_hiz;
+layout(r32f, set = 0, binding = 1) uniform writeonly image2D out_hiz;
+layout(std140, set = 0, binding = 2) uniform hiz_dispatch_buffer
+{
+    ivec4 input_rect;
+    ivec4 output_rect;
+};
+
+const float kInvalidDepth = 1000000.0;
+
+float sample_prev_depth(ivec2 coord, ivec2 src_size)
+{
+    if (coord.x < input_rect.x || coord.y < input_rect.y ||
+        coord.x >= input_rect.x + input_rect.z || coord.y >= input_rect.y + input_rect.w)
+    {
+        return kInvalidDepth;
+    }
+
+    ivec2 clamped_coord = clamp(coord, ivec2(0), src_size - ivec2(1));
+    return texelFetch(in_prev_hiz, clamped_coord, 0).r;
+}
+
+void main()
+{
+    ivec2 dst_coord = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 dst_size  = imageSize(out_hiz);
+    if (dst_coord.x >= dst_size.x || dst_coord.y >= dst_size.y)
+    {
+        return;
+    }
+
+    if (dst_coord.x < output_rect.x || dst_coord.y < output_rect.y ||
+        dst_coord.x >= output_rect.x + output_rect.z || dst_coord.y >= output_rect.y + output_rect.w)
+    {
+        imageStore(out_hiz, dst_coord, vec4(kInvalidDepth, 0.0, 0.0, 0.0));
+        return;
+    }
+
+    ivec2 src_size = textureSize(in_prev_hiz, 0);
+    ivec2 src_base = dst_coord * 2;
+
+    ivec2 sample_coord_0 = src_base + ivec2(0, 0);
+    ivec2 sample_coord_1 = src_base + ivec2(1, 0);
+    ivec2 sample_coord_2 = src_base + ivec2(0, 1);
+    ivec2 sample_coord_3 = src_base + ivec2(1, 1);
+
+    float d0 = sample_prev_depth(sample_coord_0, src_size);
+    float d1 = sample_prev_depth(sample_coord_1, src_size);
+    float d2 = sample_prev_depth(sample_coord_2, src_size);
+    float d3 = sample_prev_depth(sample_coord_3, src_size);
+
+    float min_depth = min(min(d0, d1), min(d2, d3));
+    imageStore(out_hiz, dst_coord, vec4(min_depth, 0.0, 0.0, 0.0));
+}

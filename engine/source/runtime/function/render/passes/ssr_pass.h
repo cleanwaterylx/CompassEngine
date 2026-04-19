@@ -6,11 +6,13 @@ namespace Compass
 {
     struct SSRPassInitInfo : RenderPassInitInfo
     {
-        RHIRenderPass* render_pass;
-        RHIImageView*  scene_color_input_attachment;
-        RHIImageView*  gbuffer_metallic_roughness_input_attachment;
-        RHIImageView*  gbuffer_position_input_attachment;
-        RHIImageView*  gbuffer_normal_input_attachment;
+        RHIRenderPass* render_pass {nullptr};
+        RHIImageView*  scene_color_input_attachment {nullptr};
+        RHIImageView*  gbuffer_metallic_roughness_input_attachment {nullptr};
+        RHIImageView*  gbuffer_position_input_attachment {nullptr};
+        RHIImageView*  gbuffer_normal_input_attachment {nullptr};
+        RHIImageView*  hiz_input_attachment {nullptr};
+        RHISampler*    hiz_sampler {nullptr};
     };
 
     class SSRPass : public RenderPass
@@ -31,7 +33,9 @@ namespace Compass
         void updateAfterFramebufferRecreate(RHIImageView* scene_color_input_attachment,
                                             RHIImageView* gbuffer_metallic_roughness_input_attachment,
                                             RHIImageView* gbuffer_position_input_attachment,
-                                            RHIImageView* gbuffer_normal_input_attachment);
+                                            RHIImageView* gbuffer_normal_input_attachment,
+                                            RHIImageView* hiz_input_attachment,
+                                            RHISampler*   hiz_sampler);
 
     private:
         void setupDescriptorSetLayout();

@@ -68,6 +68,18 @@ namespace Compass
         int height;
     };
 
+    struct HiZDispatchParams
+    {
+        int input_offset_x;
+        int input_offset_y;
+        int input_width;
+        int input_height;
+        int output_offset_x;
+        int output_offset_y;
+        int output_width;
+        int output_height;
+    };
+
     struct VulkanMeshInstance
     {
         float     enable_vertex_blending;

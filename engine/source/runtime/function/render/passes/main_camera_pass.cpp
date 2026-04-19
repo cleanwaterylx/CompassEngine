@@ -287,11 +287,11 @@ namespace Compass
         RHIAttachmentDescription& depth_attachment_description = attachments[_main_camera_pass_depth];
         depth_attachment_description.format                   = m_rhi->getDepthImageInfo().depth_image_format;
         depth_attachment_description.samples                  = RHI_SAMPLE_COUNT_1_BIT;
-        depth_attachment_description.loadOp                   = RHI_ATTACHMENT_LOAD_OP_CLEAR;
+        depth_attachment_description.loadOp                   = RHI_ATTACHMENT_LOAD_OP_LOAD;
         depth_attachment_description.storeOp                  = RHI_ATTACHMENT_STORE_OP_STORE;
         depth_attachment_description.stencilLoadOp            = RHI_ATTACHMENT_LOAD_OP_DONT_CARE;
         depth_attachment_description.stencilStoreOp           = RHI_ATTACHMENT_STORE_OP_DONT_CARE;
-        depth_attachment_description.initialLayout            = RHI_IMAGE_LAYOUT_UNDEFINED;
+        depth_attachment_description.initialLayout            = RHI_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         depth_attachment_description.finalLayout              = RHI_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
         RHIAttachmentDescription& swapchain_image_attachment_description =
@@ -597,7 +597,7 @@ namespace Compass
         combine_ui_pass.pPreserveAttachments    = NULL;
 
         // 通过VkSubpassDependency来描述RenderPass中不同SubPass之间或同一个SubPass的内存和执行同步依赖
-        RHISubpassDependency dependencies[14] = {};
+        RHISubpassDependency dependencies[15] = {};
 
         RHISubpassDependency& deferred_lighting_pass_depend_on_shadow_map_pass = dependencies[0];
         deferred_lighting_pass_depend_on_shadow_map_pass.srcSubpass           = RHI_SUBPASS_EXTERNAL;
@@ -607,6 +607,17 @@ namespace Compass
         deferred_lighting_pass_depend_on_shadow_map_pass.srcAccessMask = RHI_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         deferred_lighting_pass_depend_on_shadow_map_pass.dstAccessMask = RHI_ACCESS_SHADER_READ_BIT;
         deferred_lighting_pass_depend_on_shadow_map_pass.dependencyFlags = 0; // NOT BY REGION
+
+        RHISubpassDependency& gbuffer_pass_depend_on_depth_prepass = dependencies[14];
+        gbuffer_pass_depend_on_depth_prepass.srcSubpass            = RHI_SUBPASS_EXTERNAL;
+        gbuffer_pass_depend_on_depth_prepass.dstSubpass            = _main_camera_subpass_gbuffer;
+        gbuffer_pass_depend_on_depth_prepass.srcStageMask =
+            RHI_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | RHI_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        gbuffer_pass_depend_on_depth_prepass.dstStageMask =
+            RHI_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | RHI_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        gbuffer_pass_depend_on_depth_prepass.srcAccessMask = RHI_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        gbuffer_pass_depend_on_depth_prepass.dstAccessMask = RHI_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+        gbuffer_pass_depend_on_depth_prepass.dependencyFlags = 0;
 
         RHISubpassDependency& ssao_pass_depend_on_gbuffer_pass = dependencies[1];
         ssao_pass_depend_on_gbuffer_pass.srcSubpass = _main_camera_subpass_gbuffer;
@@ -1196,8 +1207,8 @@ namespace Compass
             RHIPipelineDepthStencilStateCreateInfo depth_stencil_create_info {};
             depth_stencil_create_info.sType            = RHI_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
             depth_stencil_create_info.depthTestEnable  = RHI_TRUE;
-            depth_stencil_create_info.depthWriteEnable = RHI_TRUE;
-            depth_stencil_create_info.depthCompareOp   = RHI_COMPARE_OP_LESS;
+            depth_stencil_create_info.depthWriteEnable = RHI_FALSE;
+            depth_stencil_create_info.depthCompareOp   = RHI_COMPARE_OP_LESS_OR_EQUAL;
             depth_stencil_create_info.depthBoundsTestEnable = RHI_FALSE;
             depth_stencil_create_info.stencilTestEnable     = RHI_FALSE;
 
@@ -1475,8 +1486,8 @@ namespace Compass
             RHIPipelineDepthStencilStateCreateInfo depth_stencil_create_info {};
             depth_stencil_create_info.sType            = RHI_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
             depth_stencil_create_info.depthTestEnable  = RHI_TRUE;
-            depth_stencil_create_info.depthWriteEnable = RHI_TRUE;
-            depth_stencil_create_info.depthCompareOp   = RHI_COMPARE_OP_LESS;
+            depth_stencil_create_info.depthWriteEnable = RHI_FALSE;
+            depth_stencil_create_info.depthCompareOp   = RHI_COMPARE_OP_LESS_OR_EQUAL;
             depth_stencil_create_info.depthBoundsTestEnable = RHI_FALSE;
             depth_stencil_create_info.stencilTestEnable     = RHI_FALSE;
 

@@ -2626,26 +2626,26 @@ namespace Compass
         // DescriptorPool merely as we sub-allocate Buffer/Image from DeviceMemory.
         VkDescriptorPoolSize pool_sizes[7];
         pool_sizes[0].type            = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-        pool_sizes[0].descriptorCount = 3 + 2 + 2 + 2 + 1 + 1 + 3 + 3;
+        pool_sizes[0].descriptorCount = 3 + 2 + 2 + 2 + 1 + 1 + 3 + 3 + 3;
         pool_sizes[1].type            = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
         pool_sizes[1].descriptorCount = 1 + 1 + 1 * m_max_vertex_blending_mesh_count + 2;
         pool_sizes[2].type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        pool_sizes[2].descriptorCount = 1 * m_max_material_count;
+        pool_sizes[2].descriptorCount = 1 * m_max_material_count + 16;
         pool_sizes[3].type            = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        pool_sizes[3].descriptorCount = 3 + 5 * m_max_material_count + 1 + 1 + 3; // ImGui_ImplVulkan_CreateDeviceObjects
+        pool_sizes[3].descriptorCount = 3 + 5 * m_max_material_count + 1 + 1 + 3 + 16; // ImGui_ImplVulkan_CreateDeviceObjects
         pool_sizes[4].type            = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
         pool_sizes[4].descriptorCount = 4 + 1 + 1 + 2 + 1;
         pool_sizes[5].type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
         pool_sizes[5].descriptorCount = 3;
         pool_sizes[6].type            = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-        pool_sizes[6].descriptorCount = 1;
+        pool_sizes[6].descriptorCount = 16;
 
         VkDescriptorPoolCreateInfo pool_info {};
         pool_info.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         pool_info.poolSizeCount = sizeof(pool_sizes) / sizeof(pool_sizes[0]);
         pool_info.pPoolSizes    = pool_sizes;
         pool_info.maxSets =
-            1 + 1 + 1 + m_max_material_count + m_max_vertex_blending_mesh_count + 1 + 1; // +skybox + axis descriptor set
+            1 + 1 + 1 + m_max_material_count + m_max_vertex_blending_mesh_count + 1 + 1 + 16; // +skybox + axis descriptor set
         pool_info.flags = 0U;
 
         if (vkCreateDescriptorPool(m_device, &pool_info, nullptr, &m_vk_descriptor_pool) != VK_SUCCESS)
@@ -2708,7 +2708,7 @@ namespace Compass
                                 1);
 
         ((VulkanImageView*)m_depth_image_view)->setResource(
-            VulkanUtil::createImageView(m_device, ((VulkanImage*)m_depth_image)->getResource(), (VkFormat)m_depth_image_format, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_VIEW_TYPE_2D, 1, 1));
+            VulkanUtil::createImageView(m_device, ((VulkanImage*)m_depth_image)->getResource(), (VkFormat)m_depth_image_format, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_VIEW_TYPE_2D, 1, 1, 0));
     }
 
     RHISampler* VulkanRHI::getOrCreateDefaultSampler(RHIDefaultSamplerType type)
@@ -2915,12 +2915,12 @@ namespace Compass
     }
 
     void VulkanRHI::createImageView(RHIImage* image, RHIFormat format, RHIImageAspectFlags image_aspect_flags, RHIImageViewType view_type, uint32_t layout_count, uint32_t miplevels,
-        RHIImageView* &image_view)
+        RHIImageView* &image_view, uint32_t base_mip_level)
     {
         image_view = new VulkanImageView();
         VkImage vk_image = ((VulkanImage*)image)->getResource();
         VkImageView vk_image_view;
-        vk_image_view = VulkanUtil::createImageView(m_device, vk_image, (VkFormat)format, image_aspect_flags, (VkImageViewType)view_type, layout_count, miplevels);
+        vk_image_view = VulkanUtil::createImageView(m_device, vk_image, (VkFormat)format, image_aspect_flags, (VkImageViewType)view_type, layout_count, miplevels, base_mip_level);
         ((VulkanImageView*)image_view)->setResource(vk_image_view);
     }
 

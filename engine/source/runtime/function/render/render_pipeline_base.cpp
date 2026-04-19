@@ -8,6 +8,8 @@ namespace Compass
     void RenderPipelineBase::preparePassData(std::shared_ptr<RenderResourceBase> render_resource)
     {
         m_main_camera_pass->preparePassData(render_resource);
+        m_depth_linear_pass->preparePassData(render_resource);
+        m_build_hiz_pass->preparePassData(render_resource);
         m_ssao_pass->preparePassData(render_resource);
         m_ssao_blur_pass->preparePassData(render_resource);
         m_ssr_pass->preparePassData(render_resource);

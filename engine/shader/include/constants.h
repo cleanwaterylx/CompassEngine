@@ -16,6 +16,9 @@
 #define ssr_step_stride 0.1f
 #define ssr_ray_bias 0.02f
 #define ssr_thickness 0.12f
+#define ssr_thickness_scale 0.0025f
+#define ssr_max_thickness 1.5f
 #define ssr_max_distance 100.0f
+#define ssr_hiz_start_mip 5
 layout(CHAOS_LAYOUT_MAJOR) buffer;
 layout(CHAOS_LAYOUT_MAJOR) uniform;

@@ -6,6 +6,8 @@
 #include "runtime/function/render/passes/ssr_pass.h"
 #include "runtime/function/render/passes/color_grading_pass.h"
 #include "runtime/function/render/passes/combine_ui_pass.h"
+#include "runtime/function/render/passes/build_hiz_pass.h"
+#include "runtime/function/render/passes/depth_linear_pass.h"
 #include "runtime/function/render/passes/directional_light_pass.h"
 #include "runtime/function/render/passes/main_camera_pass.h"
 #include "runtime/function/render/passes/pick_pass.h"
@@ -25,6 +27,8 @@ namespace Compass
     {
         m_point_light_shadow_pass = std::make_shared<PointLightShadowPass>();
         m_directional_light_pass  = std::make_shared<DirectionalLightShadowPass>();
+        m_depth_linear_pass       = std::make_shared<DepthLinearPass>();
+        m_build_hiz_pass          = std::make_shared<BuildHiZPass>();
         m_main_camera_pass        = std::make_shared<MainCameraPass>();
         m_ssao_pass               = std::make_shared<SSAOPass>();
         m_ssao_blur_pass          = std::make_shared<SSAOBlurPass>();
@@ -44,6 +48,8 @@ namespace Compass
 
         m_point_light_shadow_pass->setCommonInfo(pass_common_info);
         m_directional_light_pass->setCommonInfo(pass_common_info);
+        m_depth_linear_pass->setCommonInfo(pass_common_info);
+        m_build_hiz_pass->setCommonInfo(pass_common_info);
         m_main_camera_pass->setCommonInfo(pass_common_info);
         m_ssao_pass->setCommonInfo(pass_common_info);
         m_ssao_blur_pass->setCommonInfo(pass_common_info);
@@ -62,6 +68,8 @@ namespace Compass
 
         std::shared_ptr<MainCameraPass> main_camera_pass = std::static_pointer_cast<MainCameraPass>(m_main_camera_pass);
         std::shared_ptr<RenderPass>     _main_camera_pass = std::static_pointer_cast<RenderPass>(m_main_camera_pass);
+        std::shared_ptr<DepthLinearPass> depth_linear_pass = std::static_pointer_cast<DepthLinearPass>(m_depth_linear_pass);
+        std::shared_ptr<BuildHiZPass>    build_hiz_pass    = std::static_pointer_cast<BuildHiZPass>(m_build_hiz_pass);
         std::shared_ptr<ParticlePass> particle_pass = std::static_pointer_cast<ParticlePass>(m_particle_pass);
 
         ParticlePassInitInfo particle_init_info{};
@@ -86,6 +94,15 @@ namespace Compass
             ->setPerMeshLayout(descriptor_layouts[MainCameraPass::LayoutType::_per_mesh]);
         std::static_pointer_cast<DirectionalLightShadowPass>(m_directional_light_pass)
             ->setPerMeshLayout(descriptor_layouts[MainCameraPass::LayoutType::_per_mesh]);
+
+        DepthLinearPassInitInfo depth_linear_init_info {};
+        depth_linear_init_info.per_mesh_layout = descriptor_layouts[MainCameraPass::LayoutType::_per_mesh];
+        m_depth_linear_pass->initialize(&depth_linear_init_info);
+
+        BuildHiZPassInitInfo build_hiz_init_info {};
+        build_hiz_init_info.input_linear_depth_image = depth_linear_pass->getLinearDepthImage();
+        build_hiz_init_info.input_linear_depth       = depth_linear_pass->getLinearDepthImageView();
+        m_build_hiz_pass->initialize(&build_hiz_init_info);
 
         m_point_light_shadow_pass->postInitialize();
         m_directional_light_pass->postInitialize();
@@ -113,6 +130,8 @@ namespace Compass
             _main_camera_pass->getFramebufferImageViews()[_main_camera_pass_gbuffer_pos];
         ssr_init_info.gbuffer_normal_input_attachment =
             _main_camera_pass->getFramebufferImageViews()[_main_camera_pass_gbuffer_normal];
+        ssr_init_info.hiz_input_attachment = build_hiz_pass->getHiZImageView();
+        ssr_init_info.hiz_sampler          = build_hiz_pass->getHiZSampler();
         m_ssr_pass->initialize(&ssr_init_info);
 
         // light cube pass init
@@ -183,6 +202,8 @@ namespace Compass
         ToneMappingPass&  tone_mapping_pass  = *(static_cast<ToneMappingPass*>(m_tone_mapping_pass.get()));
         UIPass&           ui_pass            = *(static_cast<UIPass*>(m_ui_pass.get()));
         CombineUIPass&    combine_ui_pass    = *(static_cast<CombineUIPass*>(m_combine_ui_pass.get()));
+        DepthLinearPass&  depth_linear_pass  = *(static_cast<DepthLinearPass*>(m_depth_linear_pass.get()));
+        BuildHiZPass&     build_hiz_pass     = *(static_cast<BuildHiZPass*>(m_build_hiz_pass.get()));
         ParticlePass&     particle_pass      = *(static_cast<ParticlePass*>(m_particle_pass.get()));
         SSRPass&          ssr_pass           = *(static_cast<SSRPass*>(m_ssr_pass.get()));
         LightCubePass&    light_cube_pass    = *(static_cast<LightCubePass*>(m_light_cube_pass.get()));
@@ -190,6 +211,9 @@ namespace Compass
         static_cast<ParticlePass*>(m_particle_pass.get())
             ->setRenderCommandBufferHandle(
                 static_cast<MainCameraPass*>(m_main_camera_pass.get())->getRenderCommandBuffer());
+
+        depth_linear_pass.draw();
+        build_hiz_pass.draw();
 
         static_cast<MainCameraPass*>(m_main_camera_pass.get())
             ->drawForward(color_grading_pass,
@@ -237,6 +261,8 @@ namespace Compass
         ToneMappingPass&  tone_mapping_pass  = *(static_cast<ToneMappingPass*>(m_tone_mapping_pass.get()));
         UIPass&           ui_pass            = *(static_cast<UIPass*>(m_ui_pass.get()));
         CombineUIPass&    combine_ui_pass    = *(static_cast<CombineUIPass*>(m_combine_ui_pass.get()));
+        DepthLinearPass&  depth_linear_pass  = *(static_cast<DepthLinearPass*>(m_depth_linear_pass.get()));
+        BuildHiZPass&     build_hiz_pass     = *(static_cast<BuildHiZPass*>(m_build_hiz_pass.get()));
         ParticlePass&     particle_pass      = *(static_cast<ParticlePass*>(m_particle_pass.get()));
         SSAOPass&         ssao_pass          = *(static_cast<SSAOPass*>(m_ssao_pass.get()));
         SSAOBlurPass&     ssao_blur_pass     = *(static_cast<SSAOBlurPass*>(m_ssao_blur_pass.get()));
@@ -246,6 +272,9 @@ namespace Compass
         static_cast<ParticlePass*>(m_particle_pass.get())
             ->setRenderCommandBufferHandle(
                 static_cast<MainCameraPass*>(m_main_camera_pass.get())->getRenderCommandBuffer());
+
+        depth_linear_pass.draw();
+        build_hiz_pass.draw();
 
         static_cast<MainCameraPass*>(m_main_camera_pass.get())
             ->draw(color_grading_pass,
@@ -270,6 +299,8 @@ namespace Compass
     void RenderPipeline::passUpdateAfterRecreateSwapchain()
     {
         MainCameraPass&   main_camera_pass   = *(static_cast<MainCameraPass*>(m_main_camera_pass.get()));
+        DepthLinearPass&  depth_linear_pass  = *(static_cast<DepthLinearPass*>(m_depth_linear_pass.get()));
+        BuildHiZPass&     build_hiz_pass     = *(static_cast<BuildHiZPass*>(m_build_hiz_pass.get()));
         SSAOPass&         ssao_pass          = *(static_cast<SSAOPass*>(m_ssao_pass.get()));
         SSAOBlurPass&     ssao_blur_pass     = *(static_cast<SSAOBlurPass*>(m_ssao_blur_pass.get()));
         SSRPass&          ssr_pass           = *(static_cast<SSRPass*>(m_ssr_pass.get()));
@@ -281,6 +312,9 @@ namespace Compass
         ParticlePass&     particle_pass      = *(static_cast<ParticlePass*>(m_particle_pass.get()));
         LightCubePass&    light_cube_pass    = *(static_cast<LightCubePass*>(m_light_cube_pass.get()));
 
+        depth_linear_pass.updateAfterFramebufferRecreate();
+        build_hiz_pass.updateAfterFramebufferRecreate(depth_linear_pass.getLinearDepthImage(),
+                                                      depth_linear_pass.getLinearDepthImageView());
         main_camera_pass.updateAfterFramebufferRecreate();
         ssao_pass.updateAfterFramebufferRecreate(
             main_camera_pass.getFramebufferImageViews()[_main_camera_pass_gbuffer_pos],
@@ -291,7 +325,9 @@ namespace Compass
             main_camera_pass.getFramebufferImageViews()[_main_camera_pass_backup_buffer_odd],
             main_camera_pass.getFramebufferImageViews()[_main_camera_pass_gbuffer_b],
             main_camera_pass.getFramebufferImageViews()[_main_camera_pass_gbuffer_pos],
-            main_camera_pass.getFramebufferImageViews()[_main_camera_pass_gbuffer_normal]);
+            main_camera_pass.getFramebufferImageViews()[_main_camera_pass_gbuffer_normal],
+            build_hiz_pass.getHiZImageView(),
+            build_hiz_pass.getHiZSampler());
         tone_mapping_pass.updateAfterFramebufferRecreate(
             main_camera_pass.getFramebufferImageViews()[_main_camera_pass_ssr]);
         color_grading_pass.updateAfterFramebufferRecreate(

@@ -27,14 +27,16 @@ namespace Compass
         updateAfterFramebufferRecreate(_init_info->scene_color_input_attachment,
                                        _init_info->gbuffer_metallic_roughness_input_attachment,
                                        _init_info->gbuffer_position_input_attachment,
-                                       _init_info->gbuffer_normal_input_attachment);
+                                       _init_info->gbuffer_normal_input_attachment,
+                                       _init_info->hiz_input_attachment,
+                                       _init_info->hiz_sampler);
     }
 
     void SSRPass::setupDescriptorSetLayout()
     {
         m_descriptor_infos.resize(1);
 
-        RHIDescriptorSetLayoutBinding ssr_global_layout_bindings[5] = {};
+        RHIDescriptorSetLayoutBinding ssr_global_layout_bindings[6] = {};
 
         RHIDescriptorSetLayoutBinding& scene_color_binding = ssr_global_layout_bindings[0];
         scene_color_binding.binding                       = 0;
@@ -65,6 +67,12 @@ namespace Compass
         ssr_storage_binding.descriptorType                 = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
         ssr_storage_binding.descriptorCount                = 1;
         ssr_storage_binding.stageFlags                     = RHI_SHADER_STAGE_FRAGMENT_BIT;
+
+        RHIDescriptorSetLayoutBinding& hiz_binding = ssr_global_layout_bindings[5];
+        hiz_binding.binding                        = 5;
+        hiz_binding.descriptorType                 = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        hiz_binding.descriptorCount                = 1;
+        hiz_binding.stageFlags                     = RHI_SHADER_STAGE_FRAGMENT_BIT;
 
         RHIDescriptorSetLayoutCreateInfo ssr_global_layout_create_info {};
         ssr_global_layout_create_info.sType        = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -248,7 +256,9 @@ namespace Compass
     void SSRPass::updateAfterFramebufferRecreate(RHIImageView* scene_color_input_attachment,
                                                  RHIImageView* gbuffer_metallic_roughness_input_attachment,
                                                  RHIImageView* gbuffer_position_input_attachment,
-                                                 RHIImageView* gbuffer_normal_input_attachment)
+                                                 RHIImageView* gbuffer_normal_input_attachment,
+                                                 RHIImageView* hiz_input_attachment,
+                                                 RHISampler*   hiz_sampler)
     {
         RHIDescriptorImageInfo scene_color_input_attachment_info {};
         scene_color_input_attachment_info.sampler     = m_rhi->getOrCreateDefaultSampler(Default_Sampler_Linear);
@@ -275,7 +285,12 @@ namespace Compass
         ssr_storage_buffer_info.range  = sizeof(SSAOKernelObject);
         ssr_storage_buffer_info.buffer = m_global_render_resource->_storage_buffer._ssao_kernel_storage_buffer;
 
-        RHIWriteDescriptorSet ssr_descriptor_writes_info[5];
+        RHIDescriptorImageInfo hiz_input_attachment_info {};
+        hiz_input_attachment_info.sampler     = hiz_sampler ? hiz_sampler : m_rhi->getOrCreateDefaultSampler(Default_Sampler_Nearest);
+        hiz_input_attachment_info.imageView   = hiz_input_attachment;
+        hiz_input_attachment_info.imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        RHIWriteDescriptorSet ssr_descriptor_writes_info[6];
 
         RHIWriteDescriptorSet& scene_color_descriptor_write_info = ssr_descriptor_writes_info[0];
         scene_color_descriptor_write_info.sType           = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -326,6 +341,16 @@ namespace Compass
         ssr_storage_descriptor_write_info.descriptorType  = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
         ssr_storage_descriptor_write_info.descriptorCount = 1;
         ssr_storage_descriptor_write_info.pBufferInfo     = &ssr_storage_buffer_info;
+
+        RHIWriteDescriptorSet& hiz_descriptor_write_info = ssr_descriptor_writes_info[5];
+        hiz_descriptor_write_info.sType           = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        hiz_descriptor_write_info.pNext           = nullptr;
+        hiz_descriptor_write_info.dstSet          = m_descriptor_infos[0].descriptor_set;
+        hiz_descriptor_write_info.dstBinding      = 5;
+        hiz_descriptor_write_info.dstArrayElement = 0;
+        hiz_descriptor_write_info.descriptorType  = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        hiz_descriptor_write_info.descriptorCount = 1;
+        hiz_descriptor_write_info.pImageInfo      = &hiz_input_attachment_info;
 
         m_rhi->updateDescriptorSets(sizeof(ssr_descriptor_writes_info) / sizeof(ssr_descriptor_writes_info[0]),
                                     ssr_descriptor_writes_info,
